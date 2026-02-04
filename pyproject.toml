@@ -8,6 +8,8 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "fastapi[standard] (>=0.128.0,<0.129.0)",
+    "uvicorn[standard] (>=0.40.0,<0.41.0)"
 ]
 
 [tool.poetry]
@@ -19,5 +21,7 @@ build-backend = "poetry.core.masonry.api"
 
 [dependency-groups]
 dev = [
-    "pytest (>=9.0.2,<10.0.0)"
+    "pytest (>=9.0.2,<10.0.0)",
+    "fastapi-cli (>=0.0.20,<0.0.21)"
 ]
+
