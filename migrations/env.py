@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from src.snh_project.database import DATABASE_URL
-from src.snh_project.models.models import Base
+from src.snh_project.core.patient import Base
 
 config = context.config
 config.set_main_option('sqlalchemy.url', DATABASE_URL)
