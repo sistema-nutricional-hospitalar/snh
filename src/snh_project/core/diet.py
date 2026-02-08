@@ -230,26 +230,90 @@ class DietaOral(Dieta):
         self._permite_sal = valor
         self.registrar_atualizacao()
     
-    def calcular_nutrientes(self) -> dict[str, float]:
+    def calcular_nutrientes(self) -> dict[str, float | dict]:
         """
-        Implementação do método abstrato.
-        Calcula nutrientes totais de DietaOral.
+        Calcula nutrientes de forma inteligente e estratégica.
+        
+        Compara nutrientes prescritos vs alcançados pelos itens do cardápio.
+        Fornece análise de viabilidade da dieta.
         
         Returns:
-            dict com macronutrientes calculados
+            dict com:
+            - prescribed: nutrientes prescritos
+            - achieved_from_items: nutrientes dos itens adicionados
+            - analysis: percentual de cobertura e viabilidade
+            - restrictions: contraindicações
         """
+        calorias_itens = sum(item.calorias for item in self._itens) if self._itens else 0.0
+        proteina_itens = sum(item.proteinas for item in self._itens) if self._itens else 0.0
+        carboidrato_itens = sum(item.carboidratos for item in self._itens) if self._itens else 0.0
+        lipidio_itens = sum(item.gorduras for item in self._itens) if self._itens else 0.0
+        
+        diferenca_calorias = self._calorias_dieta - calorias_itens
+        
+        percentual_cobertura = (
+            (calorias_itens / self._calorias_dieta * 100) 
+            if self._calorias_dieta > 0 else 0.0
+        )
+        
+        viavel = percentual_cobertura >= 80.0 or len(self._itens) == 0
+        
         return {
             "tipo_dieta": "Oral",
             "textura": self._textura,
-            "calorias_total": self._calorias_dieta,
-            "proteina_total_g": self._proteina_dieta,
-            "carboidrato_total_g": self._carboidrato_dieta,
-            "lipidio_total_g": self._lipidio_dieta,
-            "fibra_total_g": self._fibra_g,
-            "itens_cardapio": len(self._itens),
-            "permite_acucar": self._permite_acucar,
-            "permite_sal": self._permite_sal
+            
+            "prescrito": {
+                "calorias": self._calorias_dieta,
+                "proteina_g": self._proteina_dieta,
+                "carboidrato_g": self._carboidrato_dieta,
+                "lipidio_g": self._lipidio_dieta,
+                "fibra_g": self._fibra_g
+            },
+            
+            "alcancado_por_itens": {
+                "calorias": calorias_itens,
+                "proteina_g": proteina_itens,
+                "carboidrato_g": carboidrato_itens,
+                "lipidio_g": lipidio_itens,
+                "quantidade_itens": len(self._itens)
+            },
+            
+            "analise": {
+                "diferenca_calorias": diferenca_calorias,
+                "percentual_cobertura": round(percentual_cobertura, 2),
+                "viavel": viavel,
+                "mensagem": (
+                    "Dieta completa" if percentual_cobertura >= 100 else
+                    "Dieta viável" if viavel else
+                    "AVISO: Dieta incompleta (< 80% cobertura)"
+                )
+            },
+            
+            "restricoes": {
+                "permite_acucar": self._permite_acucar,
+                "permite_sal": self._permite_sal
+            }
         }
+    
+    def validar_compatibilidade(self) -> bool:
+        """
+        Valida se dieta oral é viável.
+        
+        Regras:
+        - Deve ter calorias prescritas > 0
+        - Se tem itens, deve cobrir pelo menos 80% das calorias
+        
+        Returns:
+            True se dieta é válida, False caso contrário
+        """
+        if self._calorias_dieta <= 0:
+            return False
+        
+        if len(self._itens) == 0:
+            return True
+        
+        nutrientes = self.calcular_nutrientes()
+        return nutrientes["analise"]["viavel"]
     
     def __repr__(self) -> str:
         return (
