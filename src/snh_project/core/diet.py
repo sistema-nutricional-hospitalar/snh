@@ -1,3 +1,4 @@
+from typing import Optional, List
 from .base import Dieta
 
 
@@ -23,7 +24,8 @@ class ItemCardapio:
         calorias: float,
         proteinas: float = 0.0,
         carboidratos: float = 0.0,
-        gorduras: float = 0.0
+        gorduras: float = 0.0,
+        restricoes: Optional[List[str]] = None
     ):
         """
         Cria um novo item de cardápio com validações rigorosas.
@@ -59,6 +61,7 @@ class ItemCardapio:
         self._proteinas: float = proteinas
         self._carboidratos: float = carboidratos
         self._gorduras: float = gorduras
+        self._restricoes: List[str] = [r.strip().lower() for r in (restricoes or [])]
     
     
     @property
@@ -91,6 +94,11 @@ class ItemCardapio:
         """Retorna o total de gorduras em gramas"""
         return self._gorduras
     
+    @property
+    def restricoes(self) -> List[str]:
+        """Retorna lista de restrições alimentares associadas ao item"""
+        return self._restricoes.copy()
+
     def __repr__(self) -> str:
         """Representação em string para debug"""
         return (
@@ -181,6 +189,7 @@ class DietaOral(Dieta):
         self._fibra_g: float = fibra_g
         self._permite_acucar: bool = permite_acucar
         self._permite_sal: bool = permite_sal
+        self._restricoes_proibidas: set[str] = set()
     
     @property
     def textura(self) -> str:
@@ -230,7 +239,39 @@ class DietaOral(Dieta):
         self._permite_sal = valor
         self.registrar_atualizacao()
     
-    def calcular_nutrientes(self) -> dict[str, float]:
+    def adicionar_item(self, item: ItemCardapio) -> None:
+        """Sobrescreve adicionar_item para validar restrições antes de adicionar."""
+        if not isinstance(item, ItemCardapio):
+            raise TypeError(f"Esperado ItemCardapio, recebido {type(item).__name__}")
+
+        # verifica conflito entre restrições do item e restrições proibidas da dieta
+        item_restricoes = {r.lower() for r in item.restricoes}
+        proibidas = {r.lower() for r in self._restricoes_proibidas}
+        if item_restricoes & proibidas:
+            conflitantes = ", ".join(sorted(item_restricoes & proibidas))
+            raise ValueError(f"Item '{item.nome}' conflita com restrições da dieta: {conflitantes}")
+
+        super().adicionar_item(item)
+
+    def adicionar_restricao_proibida(self, restricao: str) -> None:
+        """Adiciona uma restrição proibida (ex: 'gluten', 'lactose')."""
+        if not restricao or not restricao.strip():
+            raise ValueError("Restrição inválida")
+        self._restricoes_proibidas.add(restricao.strip().lower())
+        self.registrar_atualizacao()
+
+    def remover_restricao_proibida(self, restricao: str) -> bool:
+        """Remove uma restrição proibida; retorna True se removida"""
+        return self._restricoes_proibidas.discard(restricao.strip().lower()) is not None
+
+    def listar_restricoes_proibidas(self) -> List[str]:
+        """Retorna lista ordenada de restrições proibidas"""
+        return sorted(self._restricoes_proibidas)
+
+    def tem_restricao_proibida(self, restricao: str) -> bool:
+        return restricao.strip().lower() in self._restricoes_proibidas
+
+    def calcular_nutrientes(self) -> dict[str, float | dict]:
         """
         Implementação do método abstrato.
         Calcula nutrientes totais de DietaOral.
@@ -238,17 +279,56 @@ class DietaOral(Dieta):
         Returns:
             dict com macronutrientes calculados
         """
+        # Soma dos nutrientes fornecidos pelos itens do cardápio
+        calorias_itens = sum(item.calorias for item in self._itens) if self._itens else 0.0
+        proteina_itens = sum(item.proteinas for item in self._itens) if self._itens else 0.0
+        carboidrato_itens = sum(item.carboidratos for item in self._itens) if self._itens else 0.0
+        lipidio_itens = sum(item.gorduras for item in self._itens) if self._itens else 0.0
+
+        diferenca_calorias = self._calorias_dieta - calorias_itens
+
+        percentual_cobertura = (
+            (calorias_itens / self._calorias_dieta * 100) if self._calorias_dieta > 0 else 0.0
+        )
+
+        viavel = percentual_cobertura >= 80.0 or len(self._itens) == 0
+
         return {
             "tipo_dieta": "Oral",
             "textura": self._textura,
-            "calorias_total": self._calorias_dieta,
-            "proteina_total_g": self._proteina_dieta,
-            "carboidrato_total_g": self._carboidrato_dieta,
-            "lipidio_total_g": self._lipidio_dieta,
-            "fibra_total_g": self._fibra_g,
-            "itens_cardapio": len(self._itens),
-            "permite_acucar": self._permite_acucar,
-            "permite_sal": self._permite_sal
+
+            "prescrito": {
+                "calorias": self._calorias_dieta,
+                "proteina_g": self._proteina_dieta,
+                "carboidrato_g": self._carboidrato_dieta,
+                "lipidio_g": self._lipidio_dieta,
+                "fibra_g": self._fibra_g,
+            },
+
+            "alcancado_por_itens": {
+                "calorias": calorias_itens,
+                "proteina_g": proteina_itens,
+                "carboidrato_g": carboidrato_itens,
+                "lipidio_g": lipidio_itens,
+                "quantidade_itens": len(self._itens),
+            },
+
+            "analise": {
+                "diferenca_calorias": diferenca_calorias,
+                "percentual_cobertura": round(percentual_cobertura, 2),
+                "viavel": viavel,
+                "mensagem": (
+                    "Dieta completa" if percentual_cobertura >= 100 else
+                    "Dieta viável" if viavel else
+                    "AVISO: Dieta incompleta (< 80% cobertura)"
+                )
+            },
+
+            "restricoes": {
+                "permite_acucar": self._permite_acucar,
+                "permite_sal": self._permite_sal,
+                "proibidas": sorted(self._restricoes_proibidas)
+            }
         }
     
     def __repr__(self) -> str:
