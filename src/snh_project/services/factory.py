@@ -1,24 +1,43 @@
 from typing import Dict, Any
-from .diet import DietaOral, DietaEnteral, Dieta
+from ..core.diet import DietaOral, DietaEnteral
+from ..core.base import Dieta
 
 class DietaFactory:
     """
-    Factory responsável por instanciar os objetos de dieta corretos,
-    garantindo que os dados recebidos (ex: de um formulário ou API)
-    sejam mapeados para os argumentos exigidos pelas classes atualizadas.
+    Implementação do Padrão Factory Method.
+    
+    Responsabilidade: Centralizar a criação de objetos da hierarquia 'Dieta'.
+    Isso desacopla o código cliente (Prescrição) das classes concretas (Oral/Enteral).
+    
+    A Factory valida os dados de entrada e garante que as dietas sejam criadas
+    com todos os parâmetros obrigatórios, fornecendo mensagens de erro claras
+    quando algo está faltando ou inválido.
     """
 
     @staticmethod
     def criar_dieta(tipo: str, dados: Dict[str, Any]) -> Dieta:
         """
-        Cria uma instância de Dieta baseada no tipo.
+        Fabrica uma instância de Dieta baseada no tipo solicitado.
 
         Args:
-            tipo: 'oral' ou 'enteral'
-            dados: Dicionário contendo os parâmetros necessários.
+            tipo (str): O tipo de dieta ('oral' ou 'enteral').
+            dados (Dict[str, Any]): Dicionário contendo os parâmetros necessários.
+        
+        Returns:
+            Dieta: Uma instância validada de DietaOral ou DietaEnteral.
         
         Raises:
             ValueError: Se o tipo for desconhecido ou dados forem inválidos.
+        
+        Exemplo:
+            dados_oral = {
+                'textura': 'normal',
+                'numero_refeicoes': 5,
+                'tipo_refeicao': 'almoço',
+                'descricao': 'Dieta Geral',
+                'usuario_responsavel': 'Dr. Silva'
+            }
+            dieta = DietaFactory.criar_dieta('oral', dados_oral)
         """
         tipo_normalizado = tipo.strip().lower()
 
@@ -29,49 +48,121 @@ class DietaFactory:
             return DietaFactory._criar_dieta_enteral(dados)
         
         else:
-            raise ValueError(f"Tipo de dieta desconhecido: {tipo}")
+            raise ValueError(
+                f"Tipo de dieta desconhecido: '{tipo}'. "
+                f"Tipos válidos: 'oral', 'enteral'"
+            )
 
     @staticmethod
     def _criar_dieta_oral(dados: Dict[str, Any]) -> DietaOral:
-        # Extração de dados com tratamento de tipos básicos
+        """
+        Cria uma instância de DietaOral com validação de parâmetros.
+        
+        Args:
+            dados: Dicionário com parâmetros da dieta oral
+        
+        Returns:
+            DietaOral: Instância criada e validada
+        
+        Raises:
+            ValueError: Se parâmetros obrigatórios estiverem faltando ou inválidos
+        """
+        # Lista de parâmetros obrigatórios
+        params_obrigatorios = ['textura', 'numero_refeicoes', 'tipo_refeicao']
+        
+        # Valida presença de parâmetros obrigatórios
+        faltando = [p for p in params_obrigatorios if p not in dados]
+        if faltando:
+            raise ValueError(
+                f"Dieta Oral exige os seguintes parâmetros: {', '.join(faltando)}"
+            )
+        
+        # Validação e conversão de tipo para numero_refeicoes
         try:
-            # Tenta converter numero_refeicoes para int se vier como string
-            num_refeicoes = int(dados.get('numero_refeicoes', 0))
-        except (ValueError, TypeError):
-            num_refeicoes = 0
+            num_refeicoes = int(dados['numero_refeicoes'])
+            if num_refeicoes <= 0:
+                raise ValueError("numero_refeicoes deve ser maior que 0")
+        except (ValueError, TypeError) as e:
+            raise ValueError(
+                f"Parâmetro 'numero_refeicoes' inválido. "
+                f"Esperado número inteiro positivo, recebido: {dados.get('numero_refeicoes')}"
+            ) from e
 
+        # Cria a dieta com parâmetros validados
         return DietaOral(
-            textura=dados.get('textura', 'normal'),
+            textura=dados['textura'],
             numero_refeicoes=num_refeicoes,
-            tipo_refeicao=dados.get('tipo_refeicao', ''),
+            tipo_refeicao=dados['tipo_refeicao'],
             descricao=dados.get('descricao', ''),
             usuario_responsavel=dados.get('usuario_responsavel', 'sistema')
         )
 
     @staticmethod
     def _criar_dieta_enteral(dados: Dict[str, Any]) -> DietaEnteral:
-        # Conversões de tipos para garantir que o diet.py não reclame
+        """
+        Cria uma instância de DietaEnteral com validação de parâmetros.
+        
+        Args:
+            dados: Dicionário com parâmetros da dieta enteral
+        
+        Returns:
+            DietaEnteral: Instância criada e validada
+        
+        Raises:
+            ValueError: Se parâmetros obrigatórios estiverem faltando ou inválidos
+        """
+        # Lista de parâmetros obrigatórios
+        params_obrigatorios = [
+            'setor_clinico',
+            'via_infusao',
+            'velocidade_ml_h',
+            'quantidade_gramas_por_porção'
+        ]
+        
+        # Valida presença de parâmetros obrigatórios
+        faltando = [p for p in params_obrigatorios if p not in dados]
+        if faltando:
+            raise ValueError(
+                f"Dieta Enteral exige os seguintes parâmetros: {', '.join(faltando)}"
+            )
+        
+        # Validação e conversão de tipos numéricos
         try:
-            velocidade = float(dados.get('velocidade_ml_h', 0))
-            gramas = float(dados.get('quantidade_gramas_por_porção', 0))
+            velocidade = float(dados['velocidade_ml_h'])
+            if velocidade <= 0:
+                raise ValueError("velocidade_ml_h deve ser maior que 0")
+        except (ValueError, TypeError) as e:
+            raise ValueError(
+                f"Parâmetro 'velocidade_ml_h' inválido. "
+                f"Esperado número positivo, recebido: {dados.get('velocidade_ml_h')}"
+            ) from e
+        
+        try:
+            gramas = float(dados['quantidade_gramas_por_porção'])
+            if gramas <= 0:
+                raise ValueError("quantidade_gramas_por_porção deve ser maior que 0")
+        except (ValueError, TypeError) as e:
+            raise ValueError(
+                f"Parâmetro 'quantidade_gramas_por_porção' inválido. "
+                f"Esperado número positivo, recebido: {dados.get('quantidade_gramas_por_porção')}"
+            ) from e
+        
+        try:
             porcoes = int(dados.get('porcoes_diarias', 1))
-        except (ValueError, TypeError):
-            # Se a conversão falhar, passamos 0 ou 1 e deixamos o diet.py 
-            # levantar o ValueError com a mensagem correta
-            velocidade = 0.0
-            gramas = 0.0
-            porcoes = 1
+            if porcoes < 1:
+                raise ValueError("porcoes_diarias deve ser >= 1")
+        except (ValueError, TypeError) as e:
+            raise ValueError(
+                f"Parâmetro 'porcoes_diarias' inválido. "
+                f"Esperado número inteiro >= 1, recebido: {dados.get('porcoes_diarias')}"
+            ) from e
 
+        # Cria a dieta com parâmetros validados
         return DietaEnteral(
-            # OBRIGATÓRIO: Novo campo exigido pelo diet.py do seu amigo
-            setor_clinico=dados.get('setor_clinico', 'Não Informado'),
-            
-            via_infusao=dados.get('via_infusao', ''),
+            setor_clinico=dados['setor_clinico'],
+            via_infusao=dados['via_infusao'],
             velocidade_ml_h=velocidade,
-            
-            # ATENÇÃO: Nome do argumento com acentuação conforme definido na classe
             quantidade_gramas_por_porção=gramas,
-            
             porcoes_diarias=porcoes,
             tipo_equipo=dados.get('tipo_equipo', 'bomba'),
             usuario_responsavel=dados.get('usuario_responsavel', 'sistema')
