@@ -223,7 +223,7 @@ class DietaOral(Dieta):
             if self._numero_refeicoes <= 0:
                 return False
             return True
-        except Exception:
+        except (ValueError, AttributeError):
             return False
     
     def __repr__(self) -> str:
@@ -359,19 +359,6 @@ class DietaEnteral(Dieta):
             raise ValueError("Velocidade deve ser maior que 0 ml/h")
         self._velocidade_ml_h = valor
         self.registrar_atualizacao()
-    
-    @property
-    def volume_total_ml(self) -> float:
-        """Retorna o volume total da prescrição em ml."""
-        return self._volume_total_ml
-    
-    @volume_total_ml.setter
-    def volume_total_ml(self, valor: float):
-        """Altera o volume total com validação."""
-        if valor <= 0:
-            raise ValueError("Volume deve ser maior que 0 ml")
-        self._volume_total_ml = valor
-        self.registrar_atualizacao()
 
     @property
     def tipo_equipo(self) -> str:
@@ -406,16 +393,6 @@ class DietaEnteral(Dieta):
         Fórmula: velocidade_ml_h * 24
         """
         return self._velocidade_ml_h * 24
-    
-    @property
-    def percentual_volume_24h(self) -> float:
-        """
-        Retorna percentual do volume total que será atingido em 24h.
-        
-        Fórmula: (volume_infundido_24h / volume_total_ml) * 100
-        """
-        # Removido: cálculo baseado em volume total — não aplicável na modelagem atual
-        return 0.0
     
     
     def calcular_nutrientes(self) -> dict[str, float | dict]:
@@ -484,6 +461,8 @@ class DietaEnteral(Dieta):
         return (
             f"DietaEnteral(via={self._via_infusao}, "
             f"vel={self._velocidade_ml_h}ml/h, "
-            f"vol={self._volume_total_ml}ml, "
-            f"cal={self._calorias_dieta}, ativo={self._ativo})"
+            f"gramas_porção={self._quantidade_gramas_por_porção}g, "
+            f"porcoes={self._porcoes_diarias}, "
+            f"equipo={self._tipo_equipo}, "
+            f"ativo={self._ativo})"
         )
