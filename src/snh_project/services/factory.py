@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from ..core.diet import DietaOral, DietaEnteral
+from ..core.diets import DietaOral, DietaEnteral
 from ..core.base import Dieta
 
 class DietaFactory:

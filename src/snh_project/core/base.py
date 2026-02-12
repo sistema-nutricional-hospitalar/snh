@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .diet import ItemCardapio
+    from .diets import ItemCardapio
 
 
 class AuditoriaMixin:
@@ -117,7 +117,7 @@ class Dieta(ABC, AuditoriaMixin, StatusDietaMixin):
         Raises:
             TypeError: Se item não for do tipo ItemCardapio
         """
-        from .diet import ItemCardapio
+        from .diets import ItemCardapio
         
         if not isinstance(item, ItemCardapio):
             raise TypeError(f"Esperado ItemCardapio, recebido {type(item).__name__}")

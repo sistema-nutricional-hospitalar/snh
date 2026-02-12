@@ -1,5 +1,5 @@
 import pytest
-from src.snh_project.core.diet import DietaEnteral
+from src.snh_project.core.diets import DietaEnteral
 from src.snh_project.core.patient import SetorClinico
 
 @pytest.fixture

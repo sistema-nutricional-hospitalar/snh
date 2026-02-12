@@ -1,5 +1,5 @@
 import pytest
-from src.snh_project.core.diet import ItemCardapio
+from src.snh_project.core.diets import ItemCardapio
 
 @pytest.fixture
 def item_simples():

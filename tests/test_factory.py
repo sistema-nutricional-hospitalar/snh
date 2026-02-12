@@ -1,6 +1,6 @@
 import pytest
 from src.snh_project.services.factory import DietaFactory
-from src.snh_project.core.diet import DietaOral, DietaEnteral
+from src.snh_project.core.diets import DietaOral, DietaEnteral
 
 # --- Fixtures (Dados de Teste Reutilizáveis) ---
 @pytest.fixture

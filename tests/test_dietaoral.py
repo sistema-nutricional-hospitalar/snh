@@ -1,5 +1,5 @@
 import pytest
-from src.snh_project.core.diet import DietaOral, ItemCardapio
+from src.snh_project.core.diets import DietaOral, ItemCardapio
 
 @pytest.fixture
 def dieta_oral_basica():
