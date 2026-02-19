@@ -13,8 +13,8 @@ class TestSetorClinico:
     def test_criar_setor_clinico(self):
         """Valida criação de um SetorClinico."""
         setor = SetorClinico("UTI")
-        assert setor.nome == "UTI"
-        assert setor.lista_pacientes == {}
+        assert setor._nome == "UTI"
+        assert setor._lista_pacientes == {}
 
     def test_adicionar_paciente_sucesso(self):
         """Valida adição bem-sucedida de um paciente ao setor."""
@@ -28,7 +28,7 @@ class TestSetorClinico:
             risco=False
         )
         # O paciente deve estar registrado no setor no leito 1
-        assert setor.lista_pacientes[1] == paciente
+        assert setor._lista_pacientes[1] == paciente
         assert paciente.nome == "João Silva"
 
     def test_adicionar_paciente_leito_ocupado(self):
@@ -72,9 +72,9 @@ class TestPaciente:
             risco=False
         )
         assert paciente.nome == "João Silva"
-        assert paciente.dataNasc == "1990-01-15"
+        assert paciente._dataNasc == "1990-01-15"
         assert paciente.setorClinico == "Clínica Geral"
-        assert paciente.leito == 1
+        assert paciente._leito == 1
         assert paciente.risco is False
 
     def test_criar_paciente_sem_setor_valido(self):
@@ -172,6 +172,6 @@ class TestPaciente:
         )
         
         # Ambos devem estar registrados
-        assert len(setor.lista_pacientes) == 2
-        assert setor.lista_pacientes[1].nome == "João Silva"
-        assert setor.lista_pacientes[2].nome == "Maria Santos"
+        assert len(setor._lista_pacientes) == 2
+        assert setor._lista_pacientes[1].nome == "João Silva"
+        assert setor._lista_pacientes[2].nome == "Maria Santos"
