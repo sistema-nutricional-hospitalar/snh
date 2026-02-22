@@ -1,2 +1,0 @@
-class Notificacao:
-    pass
