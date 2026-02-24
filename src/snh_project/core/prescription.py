@@ -76,5 +76,61 @@ class HistoricoAlteracao:
             f"data='{self._data_hora.strftime('%Y-%m-%d %H:%M:%S')}')"
         )
 
-class Prescricao:
-    pass
+class Prescricao(AuditoriaMixin):
+
+    def __init__(
+        self,
+        paciente: Paciente,
+        dieta: Dieta,
+        notificador: NotificadorService,
+        usuario_responsavel: str = "sistema"
+    ):
+        if not isinstance(paciente, Paciente):
+            raise TypeError(
+                f"paciente deve ser instância de Paciente, recebido: {type(paciente).__name__}"
+            )
+
+        if not isinstance(dieta, Dieta):
+            raise TypeError(
+                f"dieta deve ser instância de Dieta, recebido: {type(dieta).__name__}"
+            )
+
+        if not isinstance(notificador, NotificadorService):
+            raise TypeError(
+                f"notificador deve ser instância de NotificadorService, recebido: {type(notificador).__name__}"
+            )
+
+        super().__init__(usuario_responsavel)
+
+        self._paciente: Paciente = paciente
+        self._dieta: Dieta = dieta
+        self._notificador: NotificadorService = notificador
+        self._historico: list[HistoricoAlteracao] = []
+        self._ativa: bool = True
+        self._id: int = id(self)
+
+        self._historico.append(HistoricoAlteracao(
+            tipo_alteracao="Criação de prescrição",
+            descricao=f"Prescrição criada com dieta {type(dieta).__name__}",
+            usuario=usuario_responsavel
+        ))
+
+    @property
+    def paciente(self) -> Paciente:
+        return self._paciente
+
+    @property
+    def dieta(self) -> Dieta:
+        return self._dieta
+
+    @property
+    def ativa(self) -> bool:
+        return self._ativa
+
+    @property
+    def historico(self) -> list[HistoricoAlteracao]:
+        return self._historico.copy()
+
+    @property
+    def id_prescricao(self) -> int:
+        return self._id
