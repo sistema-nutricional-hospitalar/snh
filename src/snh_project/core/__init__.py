@@ -31,6 +31,6 @@ __all__ = [
     'SetorClinico',
     
     # Prescrições (quando implementadas)
-    # 'Prescricao',
-    # 'HistoricoAlteracao',
+    'Prescricao',
+    'HistoricoAlteracao',
 ]
