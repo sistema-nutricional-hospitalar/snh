@@ -7,13 +7,14 @@ from ..services.notifier import NotificadorService
 
 
 class HistoricoAlteracao:
-    
+
     def __init__(
         self,
         tipo_alteracao: str,
         descricao: str,
         usuario: str = "sistema"
     ):
+
         if not tipo_alteracao or not tipo_alteracao.strip():
             raise ValueError("tipo_alteracao não pode ser vazio")
 
@@ -40,6 +41,14 @@ class HistoricoAlteracao:
     @property
     def usuario(self) -> str:
         return self._usuario
+
+    def __repr__(self) -> str:
+        return (
+            f"HistoricoAlteracao("
+            f"tipo='{self._tipo_alteracao}', "
+            f"usuario='{self._usuario}', "
+            f"data='{self._data_hora.strftime('%Y-%m-%d %H:%M:%S')}')"
+        )
 
 class Prescricao:
     pass
