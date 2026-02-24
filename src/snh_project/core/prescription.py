@@ -149,6 +149,8 @@ class Prescricao(AuditoriaMixin):
             usuario=usuario_responsavel
         ))
 
+    # ===================== PROPERTIES =====================
+
     @property
     def paciente(self) -> Paciente:
         """Retorna o paciente da prescrição"""
@@ -174,9 +176,28 @@ class Prescricao(AuditoriaMixin):
         """Retorna o identificador único da prescrição"""
         return self._id
 
+    # ===================== MÉTODOS PRINCIPAIS =====================
 
     def alterar_dieta(self, nova_dieta: Dieta, usuario: str = "sistema") -> None:
-    
+        """
+        Substitui a dieta atual por uma nova, registrando a mudança e notificando.
+
+        Processo:
+            1. Valida se a prescrição está ativa
+            2. Valida o tipo da nova dieta
+            3. Registra no histórico
+            4. Atualiza a dieta
+            5. Notifica os observadores
+            6. Atualiza timestamp de auditoria
+
+        Args:
+            nova_dieta: Nova dieta (deve ser instância de Dieta)
+            usuario: Quem está realizando a alteração (default: "sistema")
+
+        Raises:
+            ValueError: Se a prescrição estiver encerrada
+            TypeError: Se nova_dieta não for instância de Dieta
+        """
         if not self._ativa:
             raise ValueError("Não é possível alterar uma prescrição encerrada")
 
@@ -188,14 +209,17 @@ class Prescricao(AuditoriaMixin):
         tipo_anterior = type(self._dieta).__name__
         tipo_novo = type(nova_dieta).__name__
 
+        # Registra no histórico
         self._historico.append(HistoricoAlteracao(
             tipo_alteracao="Alteração de dieta",
             descricao=f"Dieta alterada de {tipo_anterior} para {tipo_novo}",
             usuario=usuario
         ))
 
+        # Atualiza dieta
         self._dieta = nova_dieta
 
+        # Notifica observadores
         self._notificador.notificar_mudanca(
             id_paciente=self._id,
             mensagem=(
@@ -206,23 +230,43 @@ class Prescricao(AuditoriaMixin):
             )
         )
 
+        # Atualiza auditoria
         self.registrar_atualizacao()
 
     def encerrar(self, usuario: str = "sistema") -> None:
-        
+        """
+        Encerra a prescrição e a dieta associada.
+
+        Processo:
+            1. Valida se ainda está ativa
+            2. Marca _ativa = False
+            3. Registra encerramento no histórico
+            4. Encerra a dieta (encerrar_dieta())
+            5. Notifica os observadores
+            6. Atualiza timestamp de auditoria
+
+        Args:
+            usuario: Quem está encerrando (default: "sistema")
+
+        Raises:
+            ValueError: Se a prescrição já estiver encerrada
+        """
         if not self._ativa:
             raise ValueError("Prescrição já está encerrada")
 
         self._ativa = False
 
+        # Registra no histórico
         self._historico.append(HistoricoAlteracao(
             tipo_alteracao="Encerramento",
             descricao=f"Prescrição encerrada pelo usuário '{usuario}'",
             usuario=usuario
         ))
 
+        # Encerra a dieta associada
         self._dieta.encerrar_dieta()
 
+        # Notifica observadores
         self._notificador.notificar_mudanca(
             id_paciente=self._id,
             mensagem=(
@@ -233,10 +277,17 @@ class Prescricao(AuditoriaMixin):
             )
         )
 
+        # Atualiza auditoria
         self.registrar_atualizacao()
 
     def obter_resumo(self) -> dict:
-        
+        """
+        Retorna um dicionário com as informações resumidas da prescrição.
+
+        Returns:
+            dict com: id, paciente (nome), setor, dieta_tipo, ativa,
+                      total_alteracoes, criado_em, criado_por
+        """
         return {
             "id": self._id,
             "paciente": self._paciente.nome,
@@ -256,3 +307,4 @@ class Prescricao(AuditoriaMixin):
             f"dieta={type(self._dieta).__name__}, "
             f"ativa={self._ativa})"
         )
+
