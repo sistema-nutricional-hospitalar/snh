@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .diet import ItemCardapio
+    from .diets import ItemCardapio
 
 
 class AuditoriaMixin:
@@ -117,7 +117,7 @@ class Dieta(ABC, AuditoriaMixin, StatusDietaMixin):
         Raises:
             TypeError: Se item não for do tipo ItemCardapio
         """
-        from .diet import ItemCardapio
+        from .diets import ItemCardapio
         
         if not isinstance(item, ItemCardapio):
             raise TypeError(f"Esperado ItemCardapio, recebido {type(item).__name__}")
@@ -163,21 +163,23 @@ class Dieta(ABC, AuditoriaMixin, StatusDietaMixin):
         self.registrar_atualizacao()
     
     @abstractmethod
-    def calcular_nutrientes(self) -> dict[str, float]:
+    def calcular_nutrientes(self) -> dict[str, float | dict]:
         """
         Calcula o total de nutrientes da dieta.
         
-        Cada tipo de dieta implementa sua própria lógica
+        Cada tipo de dieta implementa sua própria lógica polimórfica.
         
         Returns:
-            Dicionário com 'calorias', 'proteinas', 'carboidratos', 'gorduras'
+            Dicionário estruturado com nutrientes, análise e metadados.
+            - DietaOral: chaves simples (calorias, proteinas, etc) + análise
+            - DietaEnteral: idem + volume_infundido_24h, percentual_volume_24h
         
-        Exemplo:
+        Exemplo (genérico):
             {
-                'calorias': 1500.0,
-                'proteinas': 50.0,
-                'carboidratos': 200.0,
-                'gorduras': 40.0
+                'tipo_dieta': 'Oral' | 'Enteral',
+                'prescrito': {'calorias': 1500.0, ...},
+                'alcancado_por_itens': {...} | 'alcancado_em_24h': {...},
+                'analise': {'viavel': True, 'mensagem': '...'}
             }
         """
         pass
