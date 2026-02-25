@@ -218,3 +218,246 @@ class Usuario(ABC, AuditoriaMixin):
             f"tipo={self._tipo.value}, "
             f"status={self._status.value})"
         )
+    
+# ===========================================================================
+# SUBCLASSES
+# ===========================================================================
+
+class Nutricionista(Usuario):
+    """
+    Nutricionista — especialista em dietas, pode prescrever e alterar.
+
+    Atributos adicionais:
+        _crn: Registro no Conselho Regional de Nutrição
+    """
+
+    def __init__(
+        self,
+        nome: str,
+        cpf: str,
+        email: str,
+        crn: str,
+        usuario_responsavel: str = "sistema"
+    ):
+        """
+        Args:
+            nome               : Nome completo
+            cpf                : CPF (11 dígitos)
+            email              : E-mail válido
+            crn                : Número do CRN (não pode ser vazio)
+            usuario_responsavel: Quem está cadastrando (default: "sistema")
+
+        Raises:
+            ValueError: Se CRN for vazio
+        """
+        super().__init__(nome, cpf, email, TipoUsuario.NUTRICIONISTA, usuario_responsavel)
+
+        if not crn or not crn.strip():
+            raise ValueError("CRN do nutricionista não pode ser vazio")
+
+        self._crn: str = crn.strip()
+
+    @property
+    def crn(self) -> str:
+        """Retorna o número do CRN."""
+        return self._crn
+
+    # Nutricionista é o especialista — acesso total a dietas
+    def pode_prescrever_dieta(self) -> bool:
+        return True
+
+    def pode_alterar_prescricao(self) -> bool:
+        return True
+
+    def pode_visualizar_prescricoes(self) -> bool:
+        return True
+
+
+class Medico(Usuario):
+    """
+    Médico — também pode prescrever dietas em contexto hospitalar.
+
+    Atributos adicionais:
+        _crm         : Registro no Conselho Regional de Medicina
+        _especialidade: Especialidade médica
+    """
+
+    def __init__(
+        self,
+        nome: str,
+        cpf: str,
+        email: str,
+        crm: str,
+        especialidade: str,
+        usuario_responsavel: str = "sistema"
+    ):
+        """
+        Args:
+            nome               : Nome completo
+            cpf                : CPF (11 dígitos)
+            email              : E-mail válido
+            crm                : Número do CRM (não pode ser vazio)
+            especialidade      : Especialidade médica (ex: "Clínica Geral")
+            usuario_responsavel: Quem está cadastrando (default: "sistema")
+
+        Raises:
+            ValueError: Se CRM for vazio
+        """
+        super().__init__(nome, cpf, email, TipoUsuario.MEDICO, usuario_responsavel)
+
+        if not crm or not crm.strip():
+            raise ValueError("CRM do médico não pode ser vazio")
+
+        self._crm: str = crm.strip()
+        self._especialidade: str = especialidade.strip() if especialidade else ""
+
+    @property
+    def crm(self) -> str:
+        """Retorna o número do CRM."""
+        return self._crm
+
+    @property
+    def especialidade(self) -> str:
+        """Retorna a especialidade médica."""
+        return self._especialidade
+
+    # Médico também prescreve dietas em ambiente hospitalar
+    def pode_prescrever_dieta(self) -> bool:
+        return True
+
+    def pode_alterar_prescricao(self) -> bool:
+        return True
+
+    def pode_visualizar_prescricoes(self) -> bool:
+        return True
+
+
+class Enfermeiro(Usuario):
+    """
+    Enfermeiro — acompanha o paciente, pode ver dietas mas não prescrever.
+
+    Atributos adicionais:
+        _coren: Registro no Conselho Regional de Enfermagem
+        _setor: Setor onde trabalha
+    """
+
+    def __init__(
+        self,
+        nome: str,
+        cpf: str,
+        email: str,
+        coren: str,
+        setor: str,
+        usuario_responsavel: str = "sistema"
+    ):
+        """
+        Args:
+            nome               : Nome completo
+            cpf                : CPF (11 dígitos)
+            email              : E-mail válido
+            coren              : Número do COREN
+            setor              : Setor de atuação (ex: "UTI", "Enfermaria")
+            usuario_responsavel: Quem está cadastrando (default: "sistema")
+        """
+        super().__init__(nome, cpf, email, TipoUsuario.ENFERMEIRO, usuario_responsavel)
+
+        self._coren: str = coren.strip() if coren else ""
+        self._setor: str = setor.strip() if setor else ""
+
+    @property
+    def coren(self) -> str:
+        """Retorna o número do COREN."""
+        return self._coren
+
+    @property
+    def setor(self) -> str:
+        """Retorna o setor de atuação."""
+        return self._setor
+
+    # Enfermeiro acompanha o paciente — visualiza mas não prescreve
+    def pode_prescrever_dieta(self) -> bool:
+        return False
+
+    def pode_alterar_prescricao(self) -> bool:
+        return False
+
+    def pode_visualizar_prescricoes(self) -> bool:
+        return True
+
+
+class Copeiro(Usuario):
+    """
+    Copeiro — prepara refeições, precisa ver a dieta mas não pode prescrever.
+
+    Atributos adicionais:
+        _turno: Turno de trabalho (manhã, tarde, noite)
+    """
+
+    def __init__(
+        self,
+        nome: str,
+        cpf: str,
+        email: str,
+        turno: str,
+        usuario_responsavel: str = "sistema"
+    ):
+        """
+        Args:
+            nome               : Nome completo
+            cpf                : CPF (11 dígitos)
+            email              : E-mail válido
+            turno              : Turno de trabalho ("manhã", "tarde" ou "noite")
+            usuario_responsavel: Quem está cadastrando (default: "sistema")
+        """
+        super().__init__(nome, cpf, email, TipoUsuario.COPEIRO, usuario_responsavel)
+
+        self._turno: str = turno.strip() if turno else ""
+
+    @property
+    def turno(self) -> str:
+        """Retorna o turno de trabalho."""
+        return self._turno
+
+    # Copeiro prepara a refeição — precisa ver mas não pode prescrever
+    def pode_prescrever_dieta(self) -> bool:
+        return False
+
+    def pode_alterar_prescricao(self) -> bool:
+        return False
+
+    def pode_visualizar_prescricoes(self) -> bool:
+        return True
+
+
+class Administrador(Usuario):
+    """
+    Administrador — acesso administrativo total, exceto prescrever dietas.
+
+    Não possui atributos adicionais além dos herdados de Usuario.
+    """
+
+    def __init__(
+        self,
+        nome: str,
+        cpf: str,
+        email: str,
+        usuario_responsavel: str = "sistema"
+    ):
+        """
+        Args:
+            nome               : Nome completo
+            cpf                : CPF (11 dígitos)
+            email              : E-mail válido
+            usuario_responsavel: Quem está cadastrando (default: "sistema")
+        """
+        super().__init__(nome, cpf, email, TipoUsuario.ADMINISTRADOR, usuario_responsavel)
+
+    # Admin não prescreve, mas tem acesso total para gestão
+    def pode_prescrever_dieta(self) -> bool:
+        return False
+
+    def pode_alterar_prescricao(self) -> bool:
+        return True  # pode corrigir erros administrativos
+
+    def pode_visualizar_prescricoes(self) -> bool:
+        return True
