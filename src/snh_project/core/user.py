@@ -461,3 +461,108 @@ class Administrador(Usuario):
 
     def pode_visualizar_prescricoes(self) -> bool:
         return True
+
+# ===========================================================================
+# REPOSITÓRIO
+# ===========================================================================
+
+class GerenciadorUsuarios:
+    """
+    Gerencia o cadastro e a busca de usuários do sistema.
+
+    Implementa o padrão Repository, centralizando a lógica de unicidade
+    de CPF e e-mail e facilitando as buscas.
+
+    Atributos:
+        _usuarios : Dict[str, Usuario]  — CPF → Usuario
+        _emails   : Dict[str, str]      — email → CPF
+    """
+
+    def __init__(self):
+        self._usuarios: Dict[str, Usuario] = {}
+        self._emails: Dict[str, str] = {}
+
+    def cadastrar_usuario(self, usuario: Usuario) -> bool:
+        """
+        Cadastra um novo usuário garantindo CPF e e-mail únicos.
+
+        Args:
+            usuario: Instância de qualquer subclasse de Usuario
+
+        Returns:
+            True se cadastrado com sucesso
+
+        Raises:
+            TypeError : Se usuario não for instância de Usuario
+            ValueError: Se CPF ou e-mail já estiverem cadastrados
+        """
+        if not isinstance(usuario, Usuario):
+            raise TypeError(
+                f"usuario deve ser instância de Usuario, "
+                f"recebido: {type(usuario).__name__}"
+            )
+
+        if usuario.cpf in self._usuarios:
+            raise ValueError(
+                f"CPF '{usuario.cpf}' já está cadastrado no sistema"
+            )
+
+        if usuario.email in self._emails:
+            raise ValueError(
+                f"E-mail '{usuario.email}' já está cadastrado no sistema"
+            )
+
+        self._usuarios[usuario.cpf] = usuario
+        self._emails[usuario.email] = usuario.cpf
+        return True
+
+    def buscar_por_cpf(self, cpf: str) -> Optional[Usuario]:
+        """
+        Busca um usuário pelo CPF.
+
+        Args:
+            cpf: CPF com ou sem formatação
+
+        Returns:
+            Usuario se encontrado, None caso contrário
+        """
+        cpf_limpo = "".join(c for c in cpf if c.isdigit())
+        return self._usuarios.get(cpf_limpo)
+
+    def buscar_por_email(self, email: str) -> Optional[Usuario]:
+        """
+        Busca um usuário pelo e-mail.
+
+        Args:
+            email: E-mail do usuário
+
+        Returns:
+            Usuario se encontrado, None caso contrário
+        """
+        cpf = self._emails.get(email.strip())
+        if cpf is None:
+            return None
+        return self._usuarios.get(cpf)
+
+    def listar_por_tipo(self, tipo: TipoUsuario) -> List[Usuario]:
+        """
+        Retorna todos os usuários de um determinado tipo.
+
+        Args:
+            tipo: TipoUsuario a filtrar
+
+        Returns:
+            Lista (possivelmente vazia) de usuários do tipo informado
+        """
+        return [u for u in self._usuarios.values() if u.tipo == tipo]
+
+    def listar_todos(self) -> List[Usuario]:
+        """Retorna todos os usuários cadastrados."""
+        return list(self._usuarios.values())
+
+    def __repr__(self) -> str:
+        return (
+            f"GerenciadorUsuarios("
+            f"total={len(self._usuarios)}, "
+            f"tipos={[t.value for t in TipoUsuario if self.listar_por_tipo(t)]})"
+        )
