@@ -70,7 +70,7 @@ def test_criar_dieta_oral_default_usuario(dados_oral_validos):
 
 def test_erro_tipo_dieta_desconhecido():
     with pytest.raises(ValueError, match="Tipo de dieta desconhecido"):
-        DietaFactory.criar_dieta('parenteral', {})
+        DietaFactory.criar_dieta('subcutanea', {})
 
 def test_erro_oral_parametros_faltando(dados_oral_validos):
     del dados_oral_validos['textura']
