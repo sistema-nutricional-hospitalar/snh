@@ -8,6 +8,7 @@ Aplica regras: RN01 (campos obrigatórios), RN04 (confirmação antes de excluir
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from ..infrastructure.serializers import _parse_datetime
 from ..core.patient import Paciente
 from ..core.setorclin import SetorClinico
 from ..infrastructure.patient_repository import PatientRepository
@@ -69,7 +70,7 @@ class PatientController:
             dataNasc=dados["data_nasc"],
             setorClinico=setor,
             leito=int(dados["leito"]),
-            datain=datetime.fromisoformat(dados["data_internacao"]),
+            datain=_parse_datetime(dados["data_internacao"]),
             risco=bool(dados.get("risco", False)),
         )
 

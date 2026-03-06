@@ -42,7 +42,7 @@ class JsonRepository(Generic[T]):
 
     def _load(self) -> List[Dict[str, Any]]:
         """Carrega todos os registros do arquivo JSON."""
-        raw = self._path.read_text(encoding="utf-8").strip()
+        raw = self._path.read_text(encoding="utf-8-sig").strip()
         if not raw:
             return []
         return json.loads(raw)

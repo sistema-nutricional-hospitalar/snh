@@ -34,6 +34,39 @@ from ..services.notifier import NotificadorService
 
 
 # =============================================================================
+# UTILITÁRIOS DE DATA
+# =============================================================================
+
+def _parse_datetime(valor: str) -> datetime:
+    """Converte string para datetime com mensagem de erro clara.
+
+    Aceita DD/MM/YYYY, DD.MM.YYYY e ISO YYYY-MM-DD[THH:MM:SS].
+
+    Raises:
+        ValueError: Se o formato for irreconhecível.
+    """
+    v = valor.strip()
+    partes = v.split("T", 1)
+    data_str = partes[0]
+    hora_str = partes[1] if len(partes) > 1 else None
+
+    for sep in ("/", "."):
+        if sep in data_str:
+            segmentos = data_str.split(sep)
+            if len(segmentos) == 3 and len(segmentos[0]) <= 2:
+                data_str = f"{segmentos[2]}-{segmentos[1].zfill(2)}-{segmentos[0].zfill(2)}"
+            break
+
+    iso = f"{data_str}T{hora_str}" if hora_str else data_str
+    try:
+        return datetime.fromisoformat(iso)
+    except ValueError:
+        raise ValueError(
+            f"Formato de data inválido: '{valor}'. "
+            "Use YYYY-MM-DD, DD/MM/YYYY ou DD.MM.YYYY."
+        )
+
+# =============================================================================
 # HASH DE SENHA
 # =============================================================================
 
@@ -303,7 +336,7 @@ def dict_to_paciente(d: Dict[str, Any], setor: SetorClinico) -> Paciente:
         dataNasc=d["data_nasc"],
         setorClinico=setor,
         leito=int(d["leito"]),
-        datain=datetime.fromisoformat(d["data_internacao"]),
+        datain=_parse_datetime(d["data_internacao"]),
         risco=bool(d["risco"]),
     )
 
