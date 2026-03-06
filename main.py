@@ -22,7 +22,6 @@ def demo():
     """Demonstra o sistema funcionando de ponta a ponta."""
     print("=" * 60)
     print("  SNH — Sistema Nutricional Hospitalar")
-    print("  Demo de Persistência + Controllers (Dia 1)")
     print("=" * 60)
 
     # ----------------------------------------------------------------
