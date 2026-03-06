@@ -1,0 +1,24 @@
+[
+  {
+    "id": "a42b4ba3-979c-4428-9666-6b3586b1d425",
+    "nome": "Maria Silva",
+    "data_nasc": "1975-05-20",
+    "setor_id": "setor-enf-002",
+    "leito": 5,
+    "data_internacao": "2024-03-01T08:00:00",
+    "risco": false,
+    "criado_em": "2026-03-04T13:18:46.618073",
+    "atualizado_em": "2026-03-04T13:18:46.618078"
+  },
+  {
+    "id": "229879ea-e3e6-459c-9bb4-50f10469323b",
+    "nome": "Teste Historico",
+    "data_nasc": "1990-01-01",
+    "setor_id": "setor-uti-001",
+    "leito": 10,
+    "data_internacao": "2024-01-01T00:00:00",
+    "risco": true,
+    "criado_em": "2026-03-04T13:18:54.617634",
+    "atualizado_em": "2026-03-04T13:18:54.617638"
+  }
+]
