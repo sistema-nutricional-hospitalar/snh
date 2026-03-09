@@ -1,12 +1,17 @@
 """Schemas Pydantic para autenticação."""
 
-from pydantic import BaseModel, EmailStr
+from typing import Optional
+from pydantic import BaseModel
 
 
 class LoginRequest(BaseModel):
-    """Payload do POST /auth/login."""
+    """Payload do POST /auth/login.
+    
+    Aceita email+senha (padrão interno) ou email+password (frontend).
+    """
     email: str
-    senha: str
+    senha: Optional[str] = None
+    password: Optional[str] = None  # alias vindo do frontend
 
 
 class TokenResponse(BaseModel):

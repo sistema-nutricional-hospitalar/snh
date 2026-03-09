@@ -1,5 +1,9 @@
 """
-demo
+Ponto de entrada do SNH — Script de demonstração e teste do Dia 1.
+
+Execute com: python main.py
+Isso demonstra que a camada de persistência + controllers funcionam
+sem necessidade de API ou frontend.
 """
 
 import sys
@@ -22,6 +26,7 @@ def demo():
     """Demonstra o sistema funcionando de ponta a ponta."""
     print("=" * 60)
     print("  SNH — Sistema Nutricional Hospitalar")
+    print("  Demo de Persistência + Controllers (Dia 1)")
     print("=" * 60)
 
     # ----------------------------------------------------------------
@@ -45,7 +50,7 @@ def demo():
     patient_ctrl = PatientController(data_dir=DATA_DIR)
 
     paciente_dados = {
-        "nome": "Jetro Viana",
+        "nome": "Maria Silva",
         "data_nasc": "1975-05-20",
         "setor_nome": "Enfermaria Geral",
         "leito": 5,
@@ -141,6 +146,13 @@ def demo():
     relatorio = relatorio_ctrl.gerar_relatorio_dietas()
     print(f"  Total de prescrições: {relatorio['total']}")
     print(f"  Por tipo: {relatorio.get('resumo_por_tipo', {})}")
+
+    print("\n" + "=" * 60)
+    print("  ✅ Dia 1 completo — persistência + controllers funcionando!")
+    print("  Próximo passo: rodar 'python main.py' para ver tudo acima.")
+    print("  Para testar via HTTP: aguarde o Dia 2 (FastAPI).")
+    print("=" * 60)
+
 
 if __name__ == "__main__":
     demo()

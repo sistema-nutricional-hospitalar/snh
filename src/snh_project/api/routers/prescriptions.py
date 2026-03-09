@@ -28,7 +28,7 @@ def obter_prescricao(
     registro = ctrl.obter_por_id(prescription_id)
     if not registro:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prescrição não encontrada.")
-    return PrescriptionResponse(**registro) if "paciente" in registro else _enriquecer(registro)
+    return PrescriptionResponse(**registro)
 
 
 @router.put(
@@ -75,10 +75,7 @@ def obter_historico(
     usuario: CurrentUser,
     ctrl: PrescriptionCtrl,
 ) -> List[HistoricoItem]:
-    """Retorna o histórico completo de alterações de uma prescrição.
-
-    **RN02:** cada entrada tem data/hora exata e responsável pela alteração.
-    """
+    """Retorna o histórico completo de alterações de uma prescrição."""
     historico = ctrl.obter_historico(prescription_id)
     if historico is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prescrição não encontrada.")
@@ -95,10 +92,7 @@ def encerrar_prescricao(
     usuario: NutricionistaUser,
     ctrl: PrescriptionCtrl,
 ) -> dict:
-    """Encerra uma prescrição ativa.
-
-    **Requer:** nutricionista ou administrador.
-    """
+    """Encerra uma prescrição ativa. **Requer:** nutricionista ou administrador."""
     resultado = ctrl.encerrar(prescription_id, usuario_responsavel=usuario["nome"])
     if not resultado["sucesso"]:
         motivo = resultado.get("motivo", "")
@@ -118,24 +112,5 @@ def listar_dietas_orais(
     usuario: CopOuNutriUser,
     ctrl: PrescriptionCtrl,
 ) -> List[dict]:
-    """Lista prescrições ativas com dieta oral.
-
-    Usado pela empresa terceirizada para preparação das refeições (US08).
-    **Requer:** copeiro, nutricionista ou administrador.
-    """
+    """Lista prescrições ativas com dieta oral (US08)."""
     return ctrl.listar_dietas_orais_ativas()
-
-
-def _enriquecer(registro: dict) -> PrescriptionResponse:
-    """Adapta registro bruto do JSON para o schema de resposta."""
-    return PrescriptionResponse(
-        id=registro["id"],
-        patient_id=registro["patient_id"],
-        paciente=registro.get("paciente", ""),
-        setor=registro.get("setor", ""),
-        dieta_tipo=registro.get("dieta", {}).get("tipo", ""),
-        ativa=registro.get("ativa", False),
-        total_alteracoes=len(registro.get("historico", [])),
-        criado_em=registro.get("criado_em", ""),
-        criado_por=registro.get("usuario_responsavel", ""),
-    )

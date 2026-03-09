@@ -80,7 +80,7 @@ class PrescriptionRepository(JsonRepository):
         Returns:
             Lista de registros de prescrições (ordenados por criado_em).
         """
-        registros = self.find_by_field("patient_id", patient_id) or []
+        registros = self.find_all_by_field("patient_id", patient_id)
         return sorted(registros, key=lambda r: r.get("criado_em", ""))
 
     def listar_ativas(self) -> List[Dict[str, Any]]:

@@ -1,9 +1,9 @@
 """Router de autenticação — POST /auth/login."""
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status
 
 from ..auth import criar_token
-from ..dependencies import get_user_ctrl, UserCtrl
+from ..dependencies import UserCtrl
 from ..schemas.auth import LoginRequest, TokenResponse
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
@@ -13,19 +13,14 @@ router = APIRouter(prefix="/auth", tags=["Autenticação"])
     "/login",
     response_model=TokenResponse,
     summary="Login de usuário",
-    description="Autentica com e-mail e senha. Retorna JWT Bearer token válido por 8 horas.",
 )
 def login(body: LoginRequest, user_ctrl: UserCtrl) -> TokenResponse:
-    """Autentica o usuário e retorna um token JWT.
+    """Autentica o usuário e retorna um token JWT (US16, RN08)."""
 
-    Implementa US16, RN08.
+    # aceita tanto 'senha' quanto 'password' (compatibilidade com frontend)
+    senha = body.senha or body.password
 
-    - **email**: e-mail cadastrado no sistema
-    - **senha**: senha em texto puro (transmitida via HTTPS)
-
-    Retorna `access_token` para usar como `Authorization: Bearer <token>`.
-    """
-    usuario = user_ctrl.autenticar(body.email, body.senha)
+    usuario = user_ctrl.autenticar(body.email, senha)
 
     if not usuario:
         raise HTTPException(
@@ -35,10 +30,10 @@ def login(body: LoginRequest, user_ctrl: UserCtrl) -> TokenResponse:
         )
 
     token = criar_token({
-        "sub": usuario["id"],
+        "sub":     usuario["id"],
         "user_id": usuario["id"],
-        "tipo": usuario["tipo"],
-        "nome": usuario["nome"],
+        "tipo":    usuario["tipo"],
+        "nome":    usuario["nome"],
     })
 
     return TokenResponse(

@@ -1,5 +1,6 @@
 """Router de Usuários — gestão administrativa (US15, US16)."""
 
+import uuid
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -24,10 +25,24 @@ def cadastrar_usuario(
     """Cadastra um novo usuário no sistema.
 
     **Requer:** administrador (RN06).
-
     Tipos válidos: `nutricionista`, `medico`, `enfermeiro`, `copeiro`, `administrador`.
     """
     dados = body.model_dump(exclude_none=True)
+
+    # cpf é opcional no frontend — gera placeholder se ausente
+    if not dados.get("cpf"):
+        dados["cpf"] = str(uuid.uuid4())[:11].replace("-", "")
+
+    # setor: aceita "setor" (frontend) como alias de "setor_trabalho" (legado)
+    if "setor" in dados:
+        if "setor_trabalho" not in dados:
+            dados["setor_trabalho"] = dados.pop("setor")
+        else:
+            dados.pop("setor")
+
+    # ativo: remove do payload (backend usa 'status', não 'ativo')
+    dados.pop("ativo", None)
+
     try:
         resultado = ctrl.cadastrar_usuario(dados, solicitante_tipo=usuario["tipo"])
         return UserResponse(**resultado)
@@ -47,10 +62,7 @@ def listar_usuarios(
     ctrl: UserCtrl,
     tipo: Optional[str] = Query(None, description="Filtrar por tipo de usuário"),
 ) -> List[UserResponse]:
-    """Lista todos os usuários do sistema.
-
-    **Requer:** administrador (RN06).
-    """
+    """Lista todos os usuários do sistema. **Requer:** administrador (RN06)."""
     try:
         registros = ctrl.listar_usuarios(tipo=tipo, solicitante_tipo=usuario["tipo"])
         return [UserResponse(**r) for r in registros]
@@ -105,12 +117,13 @@ def alterar_status(
     """Ativa, inativa ou bloqueia um usuário.
 
     **Requer:** administrador (RN06).
-    Status válidos: `ativo`, `inativo`, `bloqueado`.
+    Aceita `{ status: 'ativo'|'inativo'|'bloqueado' }` ou `{ ativo: true|false }`.
     """
     try:
-        ok = ctrl.alterar_status(user_id, body.status, solicitante_tipo=usuario["tipo"])
+        novo_status = body.resolver_status()
+        ok = ctrl.alterar_status(user_id, novo_status, solicitante_tipo=usuario["tipo"])
         if not ok:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")
-        return {"sucesso": True, "user_id": user_id, "novo_status": body.status}
+        return {"sucesso": True, "user_id": user_id, "novo_status": novo_status}
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))

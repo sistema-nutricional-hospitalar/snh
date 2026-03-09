@@ -1,26 +1,6 @@
 [
-  {
-    "id": "setor-uti-001",
-    "nome": "UTI"
-  },
-  {
-    "id": "setor-enf-002",
-    "nome": "Enfermaria Geral"
-  },
-  {
-    "id": "setor-cg-003",
-    "nome": "Clínica Geral"
-  },
-  {
-    "id": "setor-ped-004",
-    "nome": "Pediatria"
-  },
-  {
-    "id": "61058cbd-3fbe-4467-b13b-69e1658891ce",
-    "nome": "Enfermaria"
-  },
-  {
-    "id": "67396f23-41d8-44e0-b0e1-e767abe0f20b",
-    "nome": "string"
-  }
+  {"id": "setor-uti-001", "nome": "UTI"},
+  {"id": "setor-enf-002", "nome": "Enfermaria Geral"},
+  {"id": "setor-cg-003", "nome": "Clínica Geral"},
+  {"id": "setor-ped-004", "nome": "Pediatria"}
 ]

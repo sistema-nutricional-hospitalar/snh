@@ -1,103 +1,97 @@
 [
   {
-    "id": "6030d120-4526-48de-9ad6-da416dfcecf2",
-    "patient_id": "199eae42-0ba9-4fd3-b508-b76aa8c54b5c",
-    "setor_id": "61058cbd-3fbe-4467-b13b-69e1658891ce",
+    "id": "292deefc-aae0-4d40-82a7-463c2ac9d931",
+    "patient_id": "a42b4ba3-979c-4428-9666-6b3586b1d425",
+    "setor_id": "setor-enf-002",
     "dieta": {
       "ativa": true,
-      "criado_em": "2026-03-06T18:10:08.272198",
+      "criado_em": "2026-03-08T20:24:13.776778",
       "usuario_responsavel": "Dra. Ana Nutricionista",
       "itens": [],
-      "tipo": "parenteral",
+      "tipo": "enteral",
       "dados": {
-        "tipo_acesso": "central",
-        "volume_ml_dia": 1500.0,
-        "composicao": "aminoacidos",
-        "velocidade_ml_h": 62.5,
-        "descricao": "Dieta Parenteral via central",
+        "setor_clinico": "__reconstruct__",
+        "via_infusao": "gastrostomia",
+        "velocidade_ml_h": 60.0,
+        "quantidade_gramas_por_porção": 299.0,
+        "porcoes_diarias": 1,
+        "tipo_equipo": "bomba",
+        "descricao": "Dieta Enteral via gastrostomia",
         "usuario_responsavel": "Dra. Ana Nutricionista"
       }
     },
     "historico": [
       {
-        "data_hora": "2026-03-06T18:10:08.272283",
+        "data_hora": "2026-03-04T13:18:46.655488",
         "tipo_alteracao": "Criação de prescrição",
-        "descricao": "Prescrição criada com dieta DietaParenteral",
-        "usuario": "Dra. Ana Nutricionista"
-      }
-    ],
-    "ativa": true,
-    "criado_em": "2026-03-06T18:10:08.272259",
-    "atualizado_em": "2026-03-06T18:10:08.272262",
-    "usuario_responsavel": "Dra. Ana Nutricionista"
-  },
-  {
-    "id": "e22f4cde-8b42-4d32-aea3-f56e6abd2098",
-    "patient_id": "199eae42-0ba9-4fd3-b508-b76aa8c54b5c",
-    "setor_id": "61058cbd-3fbe-4467-b13b-69e1658891ce",
-    "dieta": {
-      "ativa": false,
-      "criado_em": "2026-03-06T18:20:10.249711",
-      "usuario_responsavel": "Dra. Ana Nutricionista",
-      "itens": [],
-      "tipo": "parenteral",
-      "dados": {
-        "tipo_acesso": "central",
-        "volume_ml_dia": 1540.0,
-        "composicao": "aminoacidos",
-        "velocidade_ml_h": 62.5,
-        "descricao": "Dieta Parenteral via central",
-        "usuario_responsavel": "Dra. Ana Nutricionista"
-      }
-    },
-    "historico": [
+        "descricao": "Prescrição criada com dieta DietaOral",
+        "usuario": "Dra. Ana"
+      },
       {
-        "data_hora": "2026-03-06T18:20:10.249738",
-        "tipo_alteracao": "Criação de prescrição",
-        "descricao": "Prescrição criada com dieta DietaParenteral",
+        "data_hora": "2026-03-04T13:18:46.655500",
+        "tipo_alteracao": "Alteração de dieta",
+        "descricao": "Dieta alterada de DietaOral para DietaOral",
+        "usuario": "Dra. Ana"
+      },
+      {
+        "data_hora": "2026-03-08T19:53:31.532550",
+        "tipo_alteracao": "Alteração de dieta",
+        "descricao": "Dieta alterada de DietaOral para DietaEnteral",
         "usuario": "Dra. Ana Nutricionista"
       },
       {
-        "data_hora": "2026-03-06T18:20:10.249747",
-        "tipo_alteracao": "Encerramento",
-        "descricao": "Prescrição encerrada pelo usuário 'Dra. Ana Nutricionista'",
-        "usuario": "Dra. Ana Nutricionista"
-      }
-    ],
-    "ativa": false,
-    "criado_em": "2026-03-06T18:20:10.249731",
-    "atualizado_em": "2026-03-06T18:20:10.286013",
-    "usuario_responsavel": "Dra. Ana Nutricionista"
-  },
-  {
-    "id": "0da22339-1541-4f34-a9f9-b710bc09d8a9",
-    "patient_id": "199eae42-0ba9-4fd3-b508-b76aa8c54b5c",
-    "setor_id": "61058cbd-3fbe-4467-b13b-69e1658891ce",
-    "dieta": {
-      "ativa": true,
-      "criado_em": "2026-03-06T18:41:07.122532",
-      "usuario_responsavel": "Dra. Ana Nutricionista",
-      "itens": [],
-      "tipo": "oral",
-      "dados": {
-        "textura": "normal",
-        "numero_refeicoes": 3,
-        "tipo_refeicao": "almoco",
-        "descricao": "",
-        "usuario_responsavel": "Dra. Ana Nutricionista"
-      }
-    },
-    "historico": [
-      {
-        "data_hora": "2026-03-06T18:41:07.125946",
-        "tipo_alteracao": "Criação de prescrição",
-        "descricao": "Prescrição criada com dieta DietaOral",
+        "data_hora": "2026-03-08T20:24:13.776806",
+        "tipo_alteracao": "Alteração de dieta",
+        "descricao": "Dieta alterada de DietaEnteral para DietaEnteral",
         "usuario": "Dra. Ana Nutricionista"
       }
     ],
     "ativa": true,
-    "criado_em": "2026-03-06T18:41:07.125915",
-    "atualizado_em": "2026-03-06T18:41:07.125925",
-    "usuario_responsavel": "Dra. Ana Nutricionista"
+    "criado_em": "2026-03-08T20:24:13.776689",
+    "atualizado_em": "2026-03-08T20:24:13.786373",
+    "usuario_responsavel": "Dra. Ana"
+  },
+  {
+    "id": "44d1c260-71a9-4e4b-a886-12ae623eda41",
+    "patient_id": "229879ea-e3e6-459c-9bb4-50f10469323b",
+    "setor_id": "setor-uti-001",
+    "dieta": {
+      "ativa": true,
+      "criado_em": "2026-03-04T13:18:54.621490",
+      "usuario_responsavel": "nutri",
+      "itens": [],
+      "tipo": "oral",
+      "dados": {
+        "textura": "pastosa",
+        "numero_refeicoes": 5,
+        "tipo_refeicao": "desjejum",
+        "descricao": "",
+        "usuario_responsavel": "nutri"
+      }
+    },
+    "historico": [
+      {
+        "data_hora": "2026-03-04T13:18:54.619845",
+        "tipo_alteracao": "Criação de prescrição",
+        "descricao": "Prescrição criada com dieta DietaOral",
+        "usuario": "nutri"
+      },
+      {
+        "data_hora": "2026-03-04T13:18:54.619861",
+        "tipo_alteracao": "Alteração de dieta",
+        "descricao": "Dieta alterada de DietaOral para DietaOral",
+        "usuario": "nutri"
+      },
+      {
+        "data_hora": "2026-03-04T13:18:54.621495",
+        "tipo_alteracao": "Alteração de dieta",
+        "descricao": "Dieta alterada de DietaOral para DietaOral",
+        "usuario": "nutri"
+      }
+    ],
+    "ativa": true,
+    "criado_em": "2026-03-04T13:18:54.621464",
+    "atualizado_em": "2026-03-04T13:18:54.621811",
+    "usuario_responsavel": "nutri"
   }
 ]
