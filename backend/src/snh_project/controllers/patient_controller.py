@@ -36,6 +36,14 @@ class PatientController:
         if not dados.get("nome", "").strip():
             raise ValueError("Campo obrigatório não preenchido: nome")
 
+        # RN01: leito é obrigatório
+        if "leito" not in dados or dados["leito"] is None:
+            raise ValueError("Campo obrigatório não preenchido: leito")
+
+        # RN01: setor é obrigatório
+        if not dados.get("setor_nome") and not dados.get("setor_id"):
+            raise ValueError("Campo obrigatório não preenchido: setor_nome")
+
         # ── Resolve setor ──────────────────────────────────────────────────────
         setor_nome = dados.get("setor_nome") or dados.get("setor_id") or "Geral"
         setor_id, setor = self._setor_repo.obter_ou_criar(setor_nome)
@@ -63,6 +71,14 @@ class PatientController:
             datain=_parse_datetime(data_internacao),
             risco=bool(dados.get("risco", False)),
         )
+
+        # RN: leito único por setor — impede ocupação duplicada
+        pacientes_no_setor = self._patient_repo.listar_por_setor(setor_id)
+        for p in pacientes_no_setor:
+            if p.get("leito") == leito_int:
+                raise ValueError(
+                    f"Leito {leito_int} já está ocupado no setor '{setor.nome}'."
+                )
 
         patient_id = self._patient_repo.salvar_paciente(paciente, setor_id)
 

@@ -6,6 +6,7 @@ Princípio SRP: este módulo faz apenas uma coisa — lidar com tokens.
 """
 
 import os
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
@@ -37,6 +38,7 @@ def criar_token(payload: Dict[str, Any]) -> str:
     expiracao = datetime.now(timezone.utc) + timedelta(hours=TOKEN_EXPIRE_HOURS)
     dados["exp"] = expiracao
     dados["iat"] = datetime.now(timezone.utc)
+    dados["jti"] = str(uuid.uuid4())  # garante unicidade mesmo no mesmo segundo
     return jwt.encode(dados, SECRET_KEY, algorithm=ALGORITHM)
 
 

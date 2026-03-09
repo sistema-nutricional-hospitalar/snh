@@ -61,7 +61,7 @@ class RelatorioController:
             resultado.append({
                 "prescricao_id":       p["id"],
                 "paciente_nome":       pr["nome"] if pr else "Desconhecido",
-                "setor":               setor_nome or "",
+                "setor_nome":          setor_nome or "",
                 "tipo_dieta":          p.get("dieta", {}).get("tipo", ""),
                 "ativa":               p.get("ativa"),
                 "criado_em":           p.get("criado_em"),
@@ -138,13 +138,13 @@ class RelatorioController:
                     "dieta_anterior":   h.get("descricao", ""),
                     "dieta_nova":       p.get("dieta", {}).get("tipo", ""),
                     "motivo":           h.get("descricao", ""),
-                    "alterado_por":     h.get("usuario", ""),
+                    "usuario":          h.get("usuario", ""),
                 })
 
         alteracoes.sort(key=lambda x: x.get("data", ""), reverse=True)
 
         return {
-            "total":      len(alteracoes),
+            "total_alteracoes": len(alteracoes),
             "urgentes":   0,  # sem campo de prioridade no historico atual
             "notificadas": len(alteracoes),
             "alteracoes": alteracoes,
@@ -155,7 +155,7 @@ class RelatorioController:
         """Gera relatório de evolução nutricional de um paciente (US14)."""
         pr = self._patient_repo.find_by_id(paciente_id)
         if pr is None:
-            raise ValueError(f"Paciente '{paciente_id}' não encontrado")
+            return {"sucesso": False, "motivo": "paciente_nao_encontrado", "paciente_id": paciente_id}
 
         prescricoes = self._prescricao_repo.listar_por_paciente(paciente_id)
 
@@ -171,11 +171,13 @@ class RelatorioController:
         historico.sort(key=lambda h: h.get("data_hora", ""))
 
         return {
-            "paciente_nome":   pr["nome"],
-            "paciente_id":     paciente_id,
-            "total_alteracoes": len(historico),
-            "historico":        historico,
-            "gerado_em":        datetime.now().isoformat(),
+            "sucesso":           True,
+            "paciente":          {"nome": pr["nome"], "id": paciente_id},
+            "paciente_id":       paciente_id,
+            "total_prescricoes": len(prescricoes),
+            "total_alteracoes":  len(historico),
+            "historico":         historico,
+            "gerado_em":         datetime.now().isoformat(),
         }
 
     def exportar_json(self, relatorio: Dict[str, Any]) -> str:
