@@ -688,7 +688,7 @@ snh-feature-frontend/
 ### 1. Clonar Repositório
 
 ```bash
-git clone https://github.com/seu-usuario/snh-project.git
+git clone https://github.com/sistema-nutricional-hospitalar/snh/tree/main
 cd snh-project
 ```
 
