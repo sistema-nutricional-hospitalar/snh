@@ -182,10 +182,15 @@ def dieta_to_dict(dieta: Dieta) -> Dict[str, Any]:
                 "tipo_refeicao": dieta._tipo_refeicao,
                 "descricao": dieta.descricao,
                 "usuario_responsavel": dieta.usuario_responsavel,
+                # Oral não tem calorias calculáveis pelo modelo — depende do cardápio
+                "calorias": None,
             },
         }
 
     if isinstance(dieta, DietaEnteral):
+        # Estimativa: 4 kcal/g é o valor calórico típico de fórmulas enterais
+        _gramas_dia = dieta._quantidade_gramas_por_porção * dieta.porcoes_diarias
+        _calorias_enteral = round(_gramas_dia * 4)
         return {
             **base,
             "tipo": "enteral",
@@ -198,10 +203,14 @@ def dieta_to_dict(dieta: Dieta) -> Dict[str, Any]:
                 "tipo_equipo": dieta.tipo_equipo,
                 "descricao": dieta.descricao,
                 "usuario_responsavel": dieta.usuario_responsavel,
+                # Estimativa calórica: gramas totais/dia × 4 kcal/g
+                "calorias": _calorias_enteral,
             },
         }
 
     if isinstance(dieta, DietaParenteral):
+        # NPT padrão: ~1 kcal/ml (concentração calórica típica de soluções parenterais)
+        _calorias_parenteral = round(dieta.volume_ml_dia * 1.0)
         return {
             **base,
             "tipo": "parenteral",
@@ -212,16 +221,23 @@ def dieta_to_dict(dieta: Dieta) -> Dict[str, Any]:
                 "velocidade_ml_h": dieta.velocidade_ml_h,
                 "descricao": dieta.descricao,
                 "usuario_responsavel": dieta.usuario_responsavel,
+                # Estimativa calórica: volume_ml/dia × 1 kcal/ml (NPT padrão)
+                "calorias": _calorias_parenteral,
             },
         }
 
     if isinstance(dieta, DietaMista):
         componentes_serializados = []
+        _calorias_mista = 0
         for comp_dieta, comp_percentual in dieta.componentes:
+            comp_dict = dieta_to_dict(comp_dieta)
             componentes_serializados.append({
-                "dieta": dieta_to_dict(comp_dieta),
+                "dieta": comp_dict,
                 "percentual": comp_percentual,
             })
+            # Soma ponderada das calorias de cada componente
+            cal_comp = comp_dict.get("dados", {}).get("calorias") or 0
+            _calorias_mista += cal_comp * (comp_percentual / 100)
         return {
             **base,
             "tipo": "mista",
@@ -229,6 +245,7 @@ def dieta_to_dict(dieta: Dieta) -> Dict[str, Any]:
                 "componentes_raw": componentes_serializados,
                 "descricao": dieta.descricao,
                 "usuario_responsavel": dieta.usuario_responsavel,
+                "calorias": round(_calorias_mista) if _calorias_mista else None,
             },
         }
 

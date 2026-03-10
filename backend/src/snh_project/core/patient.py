@@ -1,117 +1,181 @@
-"""Schemas Pydantic para Paciente."""
+"""Modelo de domínio Paciente."""
 
-from datetime import date
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, model_validator
+from datetime import datetime
+from typing import TYPE_CHECKING
 
-
-def _validar_data_nascimento(valor: Optional[str]) -> Optional[str]:
-    """Valida que a data de nascimento não é futura nem anterior a 1900."""
-    if not valor:
-        return valor
-    try:
-        nascimento = date.fromisoformat(valor)
-    except ValueError:
-        raise ValueError(f"Formato de data inválido: '{valor}'. Use AAAA-MM-DD.")
-    if nascimento >= date.today():
-        raise ValueError("Data de nascimento não pode ser hoje ou no futuro.")
-    if nascimento < date(1900, 1, 1):
-        raise ValueError("Data de nascimento inválida (anterior a 1900).")
-    return valor
+if TYPE_CHECKING:
+    from .setorclin import SetorClinico
 
 
-class PatientCreate(BaseModel):
-    """Payload para cadastro de paciente.
-
-    Aceita tanto o formato legado (data_nasc, setor_nome, leito int)
-    quanto o formato do frontend React (data_nascimento, setor_id, quarto+leito).
+class Paciente:
     """
-    nome: str
+    Representa um paciente internado no hospital.
 
-    # campos legado
-    data_nasc: Optional[str] = None
-    setor_nome: Optional[str] = None
-    leito: Optional[Any] = None          # pode vir como int ou string
-    data_internacao: Optional[str] = None
-    risco: bool = False
+    Gerencia sua alocação em um setor clínico e leito específico.
+    Aplica automaticamente risco=True para pacientes na UTI.
 
-    # campos extras do frontend
-    data_nascimento: Optional[str] = None  # alias de data_nasc
-    quarto: Optional[str] = None
-    setor_id: Optional[str] = None         # id do setor (aceita em vez de setor_nome)
-    sexo: Optional[str] = None
-    peso_atual: Optional[float] = None
-    altura: Optional[float] = None
-    diagnostico: Optional[str] = None
-    observacoes: Optional[str] = None
-    alergias: List[str] = []
-    restricoes_alimentares: List[str] = []
-    ativo: bool = True
+    Atributos:
+        _nome: Nome completo do paciente
+        _dataNasc: Data de nascimento (string ISO YYYY-MM-DD)
+        _setorClinico: Setor clínico onde está internado
+        _leito: Número do leito ocupado
+        _datain: Data/hora de internação
+        _risco: Indica se paciente está em situação de risco
+        _criado_em: Timestamp de criação do registro
+        _atualizado_em: Timestamp da última atualização
+    """
 
-    @model_validator(mode="after")
-    def normalizar_campos(self) -> "PatientCreate":
-        # Aceita data_nascimento como alias de data_nasc
-        if self.data_nascimento and not self.data_nasc:
-            self.data_nasc = self.data_nascimento
-        # Valida a data antes de usar
-        _validar_data_nascimento(self.data_nasc)
-        # data_nasc mínimo para não quebrar o domínio
-        if not self.data_nasc:
-            self.data_nasc = "1900-01-01"
-        if not self.data_internacao:
-            self.data_internacao = date.today().isoformat()
-        return self
+    def __init__(
+        self,
+        nome: str,
+        dataNasc: str,
+        setorClinico: "SetorClinico",
+        leito: int,
+        datain: datetime,
+        risco: bool,
+    ) -> None:
+        """
+        Cria um novo paciente e o registra no setor clínico.
 
+        Args:
+            nome: Nome completo do paciente.
+            dataNasc: Data de nascimento no formato YYYY-MM-DD.
+            setorClinico: Setor clínico onde o paciente será internado.
+            leito: Número do leito (deve estar disponível no setor).
+            datain: Data e hora de internação.
+            risco: Indica risco elevado (forçado True em setores UTI).
 
-class PatientUpdate(BaseModel):
-    """Payload para edição de paciente (PUT /patients/{id})."""
-    nome: Optional[str] = None
-    data_nasc: Optional[str] = None
-    setor_nome: Optional[str] = None
-    setor_id: Optional[str] = None
-    leito: Optional[Any] = None
-    quarto: Optional[str] = None
-    data_internacao: Optional[str] = None
-    risco: Optional[bool] = None
-    sexo: Optional[str] = None
-    peso_atual: Optional[float] = None
-    altura: Optional[float] = None
-    diagnostico: Optional[str] = None
-    observacoes: Optional[str] = None
-    alergias: Optional[List[str]] = None
-    restricoes_alimentares: Optional[List[str]] = None
+        Raises:
+            TypeError: Se setorClinico não for instância de SetorClinico.
+            ValueError: Se o leito já estiver ocupado no setor.
+        """
+        from .setorclin import SetorClinico as SC
 
-    @model_validator(mode="after")
-    def validar_data(self) -> "PatientUpdate":
-        _validar_data_nascimento(self.data_nasc)
-        return self
+        if not isinstance(setorClinico, SC):
+            raise TypeError(
+                f"setorClinico deve ser uma instância de SetorClinico, "
+                f"recebido: {type(setorClinico).__name__}"
+            )
 
+        self._nome = nome
+        self._dataNasc = dataNasc
+        self._setorClinico = setorClinico
+        self._leito = leito
+        self._datain = datain
+        # Setor UTI força risco=True
+        self._risco = True if "UTI" in setorClinico.nome.upper() else risco
+        self._criado_em = datetime.now()
+        self._atualizado_em = datetime.now()
 
-class PatientResponse(BaseModel):
-    """Resposta com dados de um paciente."""
-    id: str
-    nome: str
-    data_nasc: Optional[str] = None
-    setor_id: Optional[str] = None
-    setor_nome: Optional[str] = None
-    leito: Optional[Any] = None
-    quarto: Optional[str] = None
-    data_internacao: Optional[str] = None
-    risco: bool = False
-    criado_em: Optional[str] = None
-    atualizado_em: Optional[str] = None
-    # campos extras do frontend
-    sexo: Optional[str] = None
-    peso_atual: Optional[float] = None
-    altura: Optional[float] = None
-    diagnostico: Optional[str] = None
-    observacoes: Optional[str] = None
-    alergias: List[str] = []
-    restricoes_alimentares: List[str] = []
-    ativo: bool = True
+        # Registra o paciente no setor — valida disponibilidade do leito
+        resultado = setorClinico.adicionar_paciente(self, leito)
+        if resultado is not True:
+            raise ValueError(f"Leito {leito} já ocupado no setor '{setorClinico.nome}'")
 
-    class Config:
-        extra = "ignore"
+    # ── Propriedades ──────────────────────────────────────────────────────────
 
-        
-Paciente = PatientResponse
+    @property
+    def nome(self) -> str:
+        """Nome completo do paciente."""
+        return self._nome
+
+    @nome.setter
+    def nome(self, value: str) -> None:
+        self._nome = value
+        self._atualizado_em = datetime.now()
+
+    @property
+    def dataNasc(self) -> str:
+        """Data de nascimento (string ISO)."""
+        return self._dataNasc
+
+    @property
+    def setorClinico(self) -> "SetorClinico":
+        """Setor clínico atual do paciente."""
+        return self._setorClinico
+
+    @property
+    def setor_nome(self) -> str:
+        """Nome do setor clínico atual (atalho conveniente)."""
+        return self._setorClinico.nome
+
+    @property
+    def leito(self) -> int:
+        """Número do leito ocupado."""
+        return self._leito
+
+    @property
+    def datain(self) -> datetime:
+        """Data e hora de internação."""
+        return self._datain
+
+    @datain.setter
+    def datain(self, value: datetime) -> None:
+        self._datain = value
+        self._atualizado_em = datetime.now()
+
+    @property
+    def risco(self) -> bool:
+        """Indica se o paciente está em situação de risco."""
+        return self._risco
+
+    @risco.setter
+    def risco(self, value: bool) -> None:
+        self._risco = value
+        self._atualizado_em = datetime.now()
+
+    @property
+    def criado_em(self) -> datetime:
+        """Timestamp de criação do registro."""
+        return self._criado_em
+
+    @property
+    def atualizado_em(self) -> datetime:
+        """Timestamp da última atualização."""
+        return self._atualizado_em
+
+    # ── Métodos públicos ──────────────────────────────────────────────────────
+
+    def transferir_para_setor(self, novo_setor: "SetorClinico", novo_leito: int) -> None:
+        """
+        Transfere o paciente para outro setor e leito.
+
+        Remove o paciente do setor atual, atualiza referências e
+        recalcula o risco conforme o novo setor.
+
+        Args:
+            novo_setor: Setor de destino.
+            novo_leito: Leito disponível no setor de destino.
+
+        Raises:
+            ValueError: Se o leito de destino estiver ocupado.
+        """
+        self._setorClinico.remover_paciente(self._leito)
+        self._setorClinico = novo_setor
+        self._leito = novo_leito
+        # Recalcula risco conforme o novo setor
+        self._risco = True if "UTI" in novo_setor.nome.upper() else False
+        resultado = novo_setor.adicionar_paciente(self, novo_leito)
+        if resultado is not True:
+            raise ValueError(f"Leito {novo_leito} já ocupado no setor '{novo_setor.nome}'")
+        self._atualizado_em = datetime.now()
+
+    def obter_tempo_internacao(self) -> int:
+        """
+        Calcula o número de dias de internação até hoje.
+
+        Returns:
+            int: Número de dias desde a internação.
+        """
+        return (datetime.now() - self._datain).days
+
+    # ── Dunder methods ────────────────────────────────────────────────────────
+
+    def __repr__(self) -> str:
+        return (
+            f"Paciente(nome='{self._nome}', leito={self._leito}, "
+            f"setor='{self._setorClinico.nome}')"
+        )
+
+    def __str__(self) -> str:
+        return f"{self._nome} - Leito {self._leito} ({self._setorClinico.nome})"

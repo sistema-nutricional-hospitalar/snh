@@ -10,14 +10,11 @@ from .base import Dieta, AuditoriaMixin, StatusDietaMixin
 # Importa de diets (pasta modular)
 from .diets import ItemCardapio, DietaOral, DietaEnteral
 
-# Importa as classes do arquivo de pacientes (usando os nomes reais)
-from .patient import PatientResponse, PatientCreate, PatientUpdate
+# Importa a classe de domínio Paciente
+from .patient import Paciente
 
 # Importa o SetorClinico do arquivo correto
 from .setorclin import SetorClinico
-
-# Cria o "apelido" Paciente para não quebrar o resto do sistema
-Paciente = PatientResponse
 
 # Importa hierarquia de usuários
 from .user import (
@@ -47,10 +44,6 @@ __all__ = [
     # Pacientes
     'Paciente',
     'SetorClinico',
-
-    # Prescrições (quando implementadas)
-    'Prescricao',
-    'HistoricoAlteracao',
 
     # Usuários
     'TipoUsuario',

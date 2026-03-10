@@ -35,28 +35,32 @@ client.interceptors.response.use(
 function mapPrescricao(raw: any): Prescricao {
   const dieta = raw.dieta ?? {};
   const dados = dieta.dados ?? {};
+  // usuario_responsavel no backend armazena o NOME do nutricionista (não o ID)
+  const nomeResponsavel = raw.usuario_responsavel ?? dieta.usuario_responsavel ?? dados.usuario_responsavel ?? '';
   return {
-    id:               raw.id,
-    paciente_id:      raw.patient_id ?? raw.paciente_id ?? '',
-    nutricionista_id: raw.usuario_responsavel ?? '',
+    id:                  raw.id,
+    paciente_id:         raw.patient_id ?? raw.paciente_id ?? '',
+    nutricionista_id:    nomeResponsavel,
+    nutricionista_nome:  nomeResponsavel || undefined,
     dieta_atual: {
-      tipo:        dieta.tipo ?? 'oral',
-      descricao:   dados.descricao ?? dados.textura ?? dieta.tipo ?? '',
-      calorias:    dados.calorias ?? null,
+      tipo:         dieta.tipo ?? 'oral',
+      descricao:    dados.descricao ?? dados.textura ?? dieta.tipo ?? '',
+      // calorias calculadas no backend durante serialização da dieta
+      calorias:     dados.calorias ?? null,
       consistencia: dados.textura ?? dados.consistencia ?? null,
-      restricoes:  dados.restricoes ?? [],
-      suplementos: dados.suplementos ?? [],
-      observacoes: dados.observacoes ?? null,
+      restricoes:   dados.restricoes ?? [],
+      suplementos:  dados.suplementos ?? [],
+      observacoes:  dados.observacoes ?? null,
     },
     status:      raw.ativa ? 'ativa' : 'encerrada',
     data_inicio: raw.criado_em ?? '',
     data_fim:    raw.encerrado_em ?? null,
     historico:   (raw.historico ?? []).map((h: any) => ({
-      data:          h.data_hora ?? '',
+      data:           h.data_hora ?? '',
       dieta_anterior: h.descricao ?? '',
-      dieta_nova:    '',
-      motivo:        h.descricao ?? '',
-      alterado_por:  h.usuario ?? '',
+      dieta_nova:     '',
+      motivo:         h.descricao ?? '',
+      alterado_por:   h.usuario ?? '',
     })),
     observacoes: dados.observacoes ?? null,
   };
