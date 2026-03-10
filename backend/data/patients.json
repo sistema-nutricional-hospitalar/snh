@@ -39,5 +39,24 @@
     "observacoes": "sixseven",
     "alergias": [],
     "restricoes_alimentares": []
+  },
+  {
+    "id": "f7937ecd-edcd-4f73-8d4d-53a24f71e06e",
+    "nome": "bla bla",
+    "data_nasc": "1900-01-01",
+    "setor_id": "325dab04-69f2-405a-a164-994198c15a1f",
+    "leito": 1,
+    "data_internacao": "2026-03-10T00:00:00",
+    "risco": false,
+    "criado_em": "2026-03-10T10:02:45.876220",
+    "atualizado_em": "2026-03-10T10:02:45.886205",
+    "quarto": "1",
+    "sexo": "M",
+    "peso_atual": 70.0,
+    "altura": 170.0,
+    "diagnostico": "",
+    "observacoes": "",
+    "alergias": [],
+    "restricoes_alimentares": []
   }
 ]

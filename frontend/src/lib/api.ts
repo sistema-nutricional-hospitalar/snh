@@ -78,6 +78,15 @@ function mapUser(raw: any): User {
   };
 }
 
+// ─── Mapper: backend patient JSON → frontend Patient type ─────────────────────
+// Backend returns `data_nasc`, frontend type uses `data_nascimento`
+function mapPatient(raw: any): Patient {
+  return {
+    ...raw,
+    data_nascimento: raw.data_nascimento ?? raw.data_nasc ?? '',
+  } as Patient;
+}
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export async function apiLogin(data: LoginRequest): Promise<LoginResponse> {
   const res = await client.post<LoginResponse>('/auth/login', {
@@ -96,23 +105,23 @@ export async function apiGetMe(): Promise<User> {
 export async function apiGetPatients(params?: {
   setor_id?: string; busca?: string; ativo?: boolean;
 }): Promise<Patient[]> {
-  const res = await client.get<Patient[]>('/patients', { params });
-  return res.data;
+  const res = await client.get<any[]>('/patients', { params });
+  return res.data.map(mapPatient);
 }
 
 export async function apiGetPatient(id: string): Promise<Patient> {
-  const res = await client.get<Patient>(`/patients/${id}`);
-  return res.data;
+  const res = await client.get<any>(`/patients/${id}`);
+  return mapPatient(res.data);
 }
 
 export async function apiCreatePatient(data: Partial<Patient>): Promise<Patient> {
-  const res = await client.post<Patient>('/patients', data);
-  return res.data;
+  const res = await client.post<any>('/patients', data);
+  return mapPatient(res.data);
 }
 
 export async function apiUpdatePatient(id: string, data: Partial<Patient>): Promise<Patient> {
-  const res = await client.put<Patient>(`/patients/${id}`, data);
-  return res.data;
+  const res = await client.put<any>(`/patients/${id}`, data);
+  return mapPatient(res.data);
 }
 
 export async function apiDeletePatient(id: string): Promise<void> {

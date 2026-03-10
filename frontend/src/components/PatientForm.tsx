@@ -8,14 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { ArrowLeft, Save, Plus, X, Loader2 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
-import { apiCreatePatient } from '../lib/api';
+import { apiCreatePatient, apiCreatePrescription } from '../lib/api';
 import { toast } from 'sonner';
 
 const SECTORS = ['UTI', 'Cardiologia', 'Neurologia', 'Pediatria', 'Oncologia', 'Ortopedia', 'Cirurgia Geral', 'Emergência'];
 const DIET_TYPES = ['Dieta Geral', 'Dieta Hipossódica', 'Dieta Hipocalórica', 'Dieta Diabética', 'Dieta Líquida', 'Dieta Pastosa', 'Dieta Enteral Padrão', 'Dieta Enteral Hipercalórica'];
 const CONSISTENCY: Record<string, string[]> = {
-  oral:    ['Normal', 'Pastosa', 'Líquida', 'Branda'],
-  enteral: ['Líquida', 'Semi-líquida'],
+  oral:       ['Normal', 'Pastosa', 'Líquida', 'Branda'],
+  enteral:    ['Líquida', 'Semi-líquida'],
+  parenteral: ['IV'],
+  mista:      ['Combinada'],
 };
 
 interface Props { onSuccess: () => void; }
@@ -38,7 +40,7 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
     alergias: [] as string[],
     restricoes_alimentares: [] as string[],
     // dieta inicial
-    dietTipo: 'oral' as 'oral' | 'enteral',
+    dietTipo: 'oral' as 'oral' | 'enteral' | 'parenteral' | 'mista',
     dietDescricao: 'Dieta Geral',
     dietConsistencia: 'Normal',
     dietCalorias: '2000',
@@ -67,9 +69,25 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
       toast.error('Preencha nome, quarto e setor.');
       return;
     }
+
+    if (form.data_nascimento) {
+      const nascimento = new Date(form.data_nascimento);
+      const hoje       = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const anoMinimo  = new Date('1900-01-01');
+
+      if (nascimento >= hoje) {
+        toast.error('Data de nascimento não pode ser hoje ou no futuro.');
+        return;
+      }
+      if (nascimento < anoMinimo) {
+        toast.error('Data de nascimento inválida (anterior a 1900).');
+        return;
+      }
+    }
     setSaving(true);
     try {
-      await apiCreatePatient({
+      const patient = await apiCreatePatient({
         nome: form.nome.trim(),
         quarto: form.quarto.trim(),
         leito: form.leito,
@@ -85,6 +103,48 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
         ativo: true,
         data_internacao: new Date().toISOString().split('T')[0],
       });
+
+      // Criar prescrição inicial com a dieta preenchida no formulário
+      try {
+        let dados_dieta: Record<string, any> = {
+          descricao: form.dietDescricao,
+          usuario_responsavel: 'sistema',
+          observacoes: form.dietObs || '',
+          restricoes: [],
+          suplementos: [],
+        };
+
+        if (form.dietTipo === 'oral') {
+          dados_dieta.textura          = form.dietConsistencia.toLowerCase();
+          dados_dieta.numero_refeicoes = 5;
+          dados_dieta.tipo_refeicao    = 'desjejum';
+        } else if (form.dietTipo === 'enteral') {
+          dados_dieta.via_infusao                    = 'nasogástrica';
+          dados_dieta.velocidade_ml_h                = 60;
+          dados_dieta['quantidade_gramas_por_porção'] = 300;
+          dados_dieta.porcoes_diarias                = 5;
+          dados_dieta.tipo_equipo                    = 'bomba';
+        } else if (form.dietTipo === 'parenteral') {
+          dados_dieta.tipo_acesso     = 'central';
+          dados_dieta.volume_ml_dia   = 2000;
+          dados_dieta.composicao      = 'Glicose 50% + Aminoácidos 10% + Lipídios 20%';
+          dados_dieta.velocidade_ml_h = 83;
+        } else if (form.dietTipo === 'mista') {
+          dados_dieta.componentes_raw = [
+            { tipo: 'oral', percentual: 70, textura: 'normal', numero_refeicoes: 5, tipo_refeicao: 'desjejum' },
+            { tipo: 'enteral', percentual: 30, via_infusao: 'nasogástrica', velocidade_ml_h: 60, 'quantidade_gramas_por_porção': 300, porcoes_diarias: 5, tipo_equipo: 'bomba' },
+          ];
+        }
+
+        await apiCreatePrescription(patient.id, {
+          tipo_dieta: form.dietTipo,
+          dados_dieta,
+        });
+      } catch {
+        // Paciente criado com sucesso mesmo se a prescrição inicial falhar
+        toast.warning('Paciente cadastrado, mas a dieta inicial não pôde ser criada. Adicione manualmente.');
+      }
+
       await refreshPatients();
       toast.success('Paciente cadastrado com sucesso!');
       onSuccess();
@@ -155,6 +215,8 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
 
               <Field label="Data de Nascimento">
                 <Input type="date" value={form.data_nascimento}
+                  max={new Date(Date.now() - 86400000).toISOString().split('T')[0]}
+                  min="1900-01-01"
                   onChange={e => set('data_nascimento', e.target.value)} />
               </Field>
 
@@ -244,11 +306,13 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Field label="Tipo">
-                <Select value={form.dietTipo} onValueChange={v => setForm(f => ({ ...f, dietTipo: v as 'oral' | 'enteral', dietConsistencia: CONSISTENCY[v][0] }))}>
+                <Select value={form.dietTipo} onValueChange={v => setForm(f => ({ ...f, dietTipo: v as 'oral' | 'enteral' | 'parenteral' | 'mista', dietConsistencia: CONSISTENCY[v][0] }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="oral">Oral</SelectItem>
                     <SelectItem value="enteral">Enteral</SelectItem>
+                    <SelectItem value="parenteral">Parenteral</SelectItem>
+                    <SelectItem value="mista">Mista</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>

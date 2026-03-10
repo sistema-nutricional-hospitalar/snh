@@ -644,7 +644,7 @@ snh-feature-frontend/
 │   │   ├── notifications.json
 │   │   └── setores.json
 │   │
-│   ├── main.py                       # Script de demo (não é o entrypoint da API)
+│   ├── main.py                       # Entrypoint
 │   ├── pyproject.toml                # Poetry dependencies
 │   └── README.md
 │
@@ -688,7 +688,7 @@ snh-feature-frontend/
 ### 1. Clonar Repositório
 
 ```bash
-git clone https://github.com/sistema-nutricional-hospitalar/snh/tree/main
+git clone https://github.com/seu-usuario/snh-project.git
 cd snh-project
 ```
 
@@ -703,11 +703,14 @@ pip install poetry
 # Instalar dependências
 poetry install
 
-# Criar diretórios necessários (se não existirem)
+# Ativar ambiente virtual
+poetry shell
+
+# Criar diretórios necessários
 mkdir -p data
 
 # Rodar servidor (desenvolvimento)
-poetry run uvicorn src.snh_project.api.app:app --reload --port 8000
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Backend estará rodando em:** `http://localhost:8000`

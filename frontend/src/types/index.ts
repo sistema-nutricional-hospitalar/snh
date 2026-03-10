@@ -102,7 +102,7 @@ export type PriorityLevel = 'baixa' | 'media' | 'alta' | 'urgente';
 // Figma mock types (kept for compatibility)
 export interface Diet {
   id: string;
-  type: 'oral' | 'enteral';
+  type: 'oral' | 'enteral' | 'parenteral' | 'mista';
   description: string;
   consistency: string;
   restrictions: string[];
