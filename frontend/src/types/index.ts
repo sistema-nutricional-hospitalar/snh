@@ -77,6 +77,8 @@ export interface DietaInfo {
   suplementos: string[];
   consistencia?: string | null;
   observacoes?: string | null;
+  numero_refeicoes?: number | null;
+  tipo_refeicao?: string | null;
   // Campos específicos de dieta enteral
   via_infusao?: string | null;
   velocidade_ml_h?: number | null;
@@ -87,6 +89,8 @@ export interface DietaInfo {
   tipo_acesso?: string | null;
   volume_ml_dia?: number | null;
   composicao?: string | null;
+  // Campos específicos de dieta mista
+  componentes_raw?: any[] | null;
 }
 
 export interface HistoricoItem {

@@ -214,21 +214,6 @@ const NotifCard: React.FC<{ notif: Notificacao; onMarkRead: () => void }> = ({ n
               {notif.mensagem}
             </p>
 
-            {notif.prescricao_id && (
-              <div className="mb-2">
-                <a 
-                  href={`#/prescriptions/${notif.prescricao_id}`}
-                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline font-medium inline-flex items-center gap-1"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Ver detalhes da prescrição
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </a>
-              </div>
-            )}
-
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1">

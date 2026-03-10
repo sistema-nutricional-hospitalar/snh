@@ -1,9 +1,9 @@
-# 🏥 Sistema Nutricional Hospitalar (SNH)
+﻿# 🏥 Sistema Nutricional Hospitalar (SNH)
 
 <div align="center">
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.128+-green.svg)
 ![React](https://img.shields.io/badge/React-18.3+-61DAFB.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.6+-3178C6.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
@@ -106,12 +106,12 @@ O domínio hospitalar é naturalmente orientado a objetos:
 - Relatório de pacientes (por setor, por risco)
 - Relatório de dietas prescritas
 - Dashboard completo
-- Formatos: TXT, JSON, Markdown
+- Formato: JSON
 - Filtros avançados
 
 ### 🔔 **Notificações**
 - Notificações in-app
-- Email (via SMTP)
+- Email (simulado)
 - Push notifications
 - Notificações para múltiplos destinatários
 - Histórico de notificações
@@ -129,39 +129,39 @@ O domínio hospitalar é naturalmente orientado a objetos:
 O projeto segue **Clean Architecture** com camadas bem definidas:
 
 ```
-┌─────────────────────────────────────────┐
-│         PRESENTATION LAYER               │
-│  (FastAPI Routes + React Components)     │
-│  - Routers (auth, patients, etc)         │
-│  - React Pages & Components              │
-└─────────────────────────────────────────┘
++-----------------------------------------+
+|         PRESENTATION LAYER               |
+|  (FastAPI Routes + React Components)     |
+|  - Routers (auth, patients, etc)         |
+|  - React Pages & Components              |
++-----------------------------------------+
                 ↓ depends on
-┌─────────────────────────────────────────┐
-│        APPLICATION LAYER                 │
-│  (Controllers + Services)                │
-│  - UserController                        │
-│  - PatientController                     │
-│  - PrescriptionController                │
-│  - ReportController                      │
-│  - Factory, Notifier, Strategies         │
-└─────────────────────────────────────────┘
++-----------------------------------------+
+|        APPLICATION LAYER                 |
+|  (Controllers + Services)                |
+|  - UserController                        |
+|  - PatientController                     |
+|  - PrescriptionController                |
+|  - ReportController                      |
+|  - Factory, Notifier, Strategies         |
++-----------------------------------------+
                 ↓ depends on
-┌─────────────────────────────────────────┐
-│           DOMAIN LAYER ★                 │
-│  (Core Business Logic)                   │
-│  - Patient, Prescription, User           │
-│  - Diets (Oral, Enteral, Parenteral)     │
-│  - SetorClinico, HistoricoAlteracao      │
-│  - Base classes, Mixins                  │
-└─────────────────────────────────────────┘
++-----------------------------------------+
+|           DOMAIN LAYER *                 |
+|  (Core Business Logic)                   |
+|  - Patient, Prescription, User           |
+|  - Diets (Oral, Enteral, Parenteral)     |
+|  - SetorClinico, HistoricoAlteracao      |
+|  - Base classes, Mixins                  |
++-----------------------------------------+
                 ↑ used by
-┌─────────────────────────────────────────┐
-│      INFRASTRUCTURE LAYER                │
-│  (External Concerns)                     │
-│  - JSON Repositories                     │
-│  - Serializers/Deserializers             │
-│  - File Storage                          │
-└─────────────────────────────────────────┘
++-----------------------------------------+
+|      INFRASTRUCTURE LAYER                |
+|  (External Concerns)                     |
+|  - JSON Repositories                     |
+|  - Serializers/Deserializers             |
+|  - File Storage                          |
++-----------------------------------------+
 ```
 
 ### 📐 Princípios Aplicados
@@ -568,111 +568,111 @@ graph TB
 ## 📁 Estrutura do Projeto
 
 ```
-snh-feature-frontend/
-│
-├── backend/                          # Backend FastAPI
-│   ├── src/snh_project/
-│   │   ├── api/                      # API Layer
-│   │   │   ├── routers/              # Endpoints REST
-│   │   │   │   ├── auth.py           # Autenticação
-│   │   │   │   ├── patients.py       # Pacientes
-│   │   │   │   ├── prescriptions.py  # Prescrições
-│   │   │   │   ├── reports.py        # Relatórios
-│   │   │   │   ├── users.py          # Usuários
-│   │   │   │   └── notifications.py  # Notificações
-│   │   │   ├── schemas/              # Pydantic Schemas
-│   │   │   │   ├── auth.py
-│   │   │   │   ├── patient.py
-│   │   │   │   ├── prescription.py
-│   │   │   │   ├── report.py
-│   │   │   │   └── user.py
-│   │   │   ├── app.py                # FastAPI App
-│   │   │   ├── auth.py               # JWT Logic
-│   │   │   └── dependencies.py       # Dependency Injection
-│   │   │
-│   │   ├── controllers/              # Application Layer
-│   │   │   ├── user_controller.py
-│   │   │   ├── patient_controller.py
-│   │   │   ├── prescription_controller.py
-│   │   │   ├── report_controller.py
-│   │   │   └── notification_controller.py
-│   │   │
-│   │   ├── core/                     # Domain Layer ★
-│   │   │   ├── diets/                # Hierarquia de Dietas
-│   │   │   │   ├── __init__.py
-│   │   │   │   ├── item_cardapio.py
-│   │   │   │   ├── dieta_oral.py
-│   │   │   │   ├── dieta_enteral.py
-│   │   │   │   ├── dieta_parenteral.py
-│   │   │   │   └── dieta_mista.py
-│   │   │   ├── base.py               # AuditoriaMixin, StatusDietaMixin, Dieta
-│   │   │   ├── patient.py            # Paciente
-│   │   │   ├── prescription.py       # Prescricao, HistoricoAlteracao
-│   │   │   ├── setorclin.py          # SetorClinico
-│   │   │   └── user.py               # Usuario + hierarquia
-│   │   │
-│   │   ├── services/                 # Services
-│   │   │   ├── factory.py            # DietaFactory (Factory Method)
-│   │   │   ├── notifier.py           # NotificadorService (Observer)
-│   │   │   └── strategies.py         # Estratégias de notificação (Strategy)
-│   │   │
-│   │   └── infrastructure/           # Infrastructure Layer
-│   │       ├── json_repository.py    # Base Repository
-│   │       ├── user_repository.py
-│   │       ├── patient_repository.py
-│   │       ├── prescription_repository.py
-│   │       ├── notification_repository.py
-│   │       ├── setor_repository.py
-│   │       └── serializers.py        # JSON Serializers
-│   │
-│   ├── tests/                        # Testes (70+ testes)
-│   │   ├── test_auth.py
-│   │   ├── test_user.py
-│   │   ├── test_patient.py
-│   │   ├── test_prescription.py
-│   │   ├── test_dietaoral.py
-│   │   ├── test_dietaenteral.py
-│   │   ├── test_factory.py
-│   │   ├── test_notifier.py
-│   │   ├── test_strategies.py
-│   │   └── ...
-│   │
-│   ├── data/                         # Dados persistidos (JSON)
-│   │   ├── users.json
-│   │   ├── patients.json
-│   │   ├── prescriptions.json
-│   │   ├── notifications.json
-│   │   └── setores.json
-│   │
-│   ├── main.py                       # Script de demo (não é o entrypoint da API)
-│   ├── pyproject.toml                # Poetry dependencies
-│   └── README.md
-│
-├── frontend/                         # Frontend React
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ui/                   # shadcn/ui components
-│   │   │   ├── Layout.tsx
-│   │   │   ├── Sidebar.tsx
-│   │   │   └── ...
-│   │   ├── contexts/
-│   │   │   └── AppContext.tsx        # Estado global
-│   │   ├── lib/
-│   │   │   ├── api.ts                # Cliente API
-│   │   │   └── auth.ts               # Auth logic
-│   │   ├── types/
-│   │   │   └── index.ts              # TypeScript types
-│   │   ├── App.tsx                   # App principal
-│   │   └── main.tsx                  # Entrypoint
-│   │
-│   ├── package.json
-│   ├── tsconfig.json
-│   ├── vite.config.ts
-│   └── tailwind.config.js
-│
-├── .gitignore
-├── LICENSE
-└── README.md                         # Este arquivo
+snh/
+|
+|---- backend/                          # Backend FastAPI
+|   |---- src/snh_project/
+|   |   |---- api/                      # API Layer
+|   |   |   |---- routers/              # Endpoints REST
+|   |   |   |   |---- auth.py           # Autenticação
+|   |   |   |   |---- patients.py       # Pacientes
+|   |   |   |   |---- prescriptions.py  # Prescrições
+|   |   |   |   |---- reports.py        # Relatórios
+|   |   |   |   |---- users.py          # Usuários
+|   |   |   |   +-- notifications.py  # Notificações
+|   |   |   |---- schemas/              # Pydantic Schemas
+|   |   |   |   |---- auth.py
+|   |   |   |   |---- patient.py
+|   |   |   |   |---- prescription.py
+|   |   |   |   |---- report.py
+|   |   |   |   +-- user.py
+|   |   |   |---- app.py                # FastAPI App
+|   |   |   |---- auth.py               # JWT Logic
+|   |   |   +-- dependencies.py       # Dependency Injection
+|   |   |
+|   |   |---- controllers/              # Application Layer
+|   |   |   |---- user_controller.py
+|   |   |   |---- patient_controller.py
+|   |   |   |---- prescription_controller.py
+|   |   |   |---- report_controller.py
+|   |   |   +-- notification_controller.py
+|   |   |
+|   |   |---- core/                     # Domain Layer *
+|   |   |   |---- diets/                # Hierarquia de Dietas
+|   |   |   |   |---- __init__.py
+|   |   |   |   |---- item_cardapio.py
+|   |   |   |   |---- dieta_oral.py
+|   |   |   |   |---- dieta_enteral.py
+|   |   |   |   |---- dieta_parenteral.py
+|   |   |   |   +-- dieta_mista.py
+|   |   |   |---- base.py               # AuditoriaMixin, StatusDietaMixin, Dieta
+|   |   |   |---- patient.py            # Paciente
+|   |   |   |---- prescription.py       # Prescricao, HistoricoAlteracao
+|   |   |   |---- setorclin.py          # SetorClinico
+|   |   |   +-- user.py               # Usuario + hierarquia
+|   |   |
+|   |   |---- services/                 # Services
+|   |   |   |---- factory.py            # DietaFactory (Factory Method)
+|   |   |   |---- notifier.py           # NotificadorService (Observer)
+|   |   |   +-- strategies.py         # Estratégias de notificação (Strategy)
+|   |   |
+|   |   +-- infrastructure/           # Infrastructure Layer
+|   |       |---- json_repository.py    # Base Repository
+|   |       |---- user_repository.py
+|   |       |---- patient_repository.py
+|   |       |---- prescription_repository.py
+|   |       |---- notification_repository.py
+|   |       |---- setor_repository.py
+|   |       +-- serializers.py        # JSON Serializers
+|   |
+|   |---- tests/                        # Testes (390+ testes)
+|   |   |---- test_auth.py
+|   |   |---- test_user.py
+|   |   |---- test_patient.py
+|   |   |---- test_prescription.py
+|   |   |---- test_dietaoral.py
+|   |   |---- test_dietaenteral.py
+|   |   |---- test_factory.py
+|   |   |---- test_notifier.py
+|   |   |---- test_strategies.py
+|   |   +-- ...
+|   |
+|   |---- data/                         # Dados persistidos (JSON)
+|   |   |---- users.json
+|   |   |---- patients.json
+|   |   |---- prescriptions.json
+|   |   |---- notifications.json
+|   |   +-- setores.json
+|   |
+|   |---- main.py                       # Script de demo (não é o entrypoint da API)
+|   |---- pyproject.toml                # Poetry dependencies
+|   +-- README.md
+|
+|---- frontend/                         # Frontend React
+|   |---- src/
+|   |   |---- components/
+|   |   |   |---- ui/                   # shadcn/ui components
+|   |   |   |---- Layout.tsx
+|   |   |   |---- Sidebar.tsx
+|   |   |   +-- ...
+|   |   |---- contexts/
+|   |   |   +-- AppContext.tsx        # Estado global
+|   |   |---- lib/
+|   |   |   |---- api.ts                # Cliente API
+|   |   |   +-- auth.ts               # Auth logic
+|   |   |---- types/
+|   |   |   +-- index.ts              # TypeScript types
+|   |   |---- App.tsx                   # App principal
+|   |   +-- main.tsx                  # Entrypoint
+|   |
+|   |---- package.json
+|   |---- tsconfig.json
+|   |---- vite.config.ts
+|   +-- tailwind.config.js
+|
+|---- .gitignore
+|---- LICENSE
++-- README.md                         # Este arquivo
 ```
 
 ---
@@ -688,8 +688,8 @@ snh-feature-frontend/
 ### 1. Clonar Repositório
 
 ```bash
-git clone https://github.com/sistema-nutricional-hospitalar/snh/tree/main
-cd snh-project
+git clone <URL_DO_REPOSITORIO>
+cd snh
 ```
 
 ### 2. Backend (FastAPI)
@@ -739,21 +739,21 @@ Abra o navegador em: `http://localhost:5173`
 ### 2. Login
 
 **Usuário padrão (Admin):**
-- Email: `admin@snh.com`
+- Email: `admin@hospital.com`
 - Senha: `admin123`
 
 **Outros usuários de teste:**
 ```
 Nutricionista:
-- Email: nutricionista@snh.com
+- Email: nutricionista@hospital.com
 - Senha: nutri123
 
 Copeiro:
-- Email: copeiro@snh.com
+- Email: copeiro@hospital.com
 - Senha: copeiro123
 ```
 
-**Observação:** Médico e Enfermeiro existem no backend mas não têm login no frontend.
+**Observação:** Médico e Enfermeiro também têm login no frontend com acesso de leitura (Pacientes, Painel de Dietas e Notificações).
 ### 3. Funcionalidades Principais
 
 #### **Dashboard**
@@ -780,7 +780,7 @@ Copeiro:
 - Gerar relatório de prescrições (filtros: ativas/encerradas)
 - Gerar relatório de pacientes (filtros: setor, risco)
 - Gerar relatório de dietas
-- Download em múltiplos formatos (TXT, JSON, MD)
+- Download em JSON
 
 #### **Usuários** (apenas Admin)
 - Cadastrar novos usuários
@@ -798,7 +798,7 @@ Copeiro:
 
 ## 🧪 Testes
 
-O projeto possui **70+ testes automatizados** com alta cobertura.
+O projeto possui **390+ testes automatizados** (backend) com alta cobertura.
 
 ### Executar Testes
 
@@ -854,48 +854,52 @@ Acesse: `http://localhost:8000/docs`
 
 #### **Autenticação**
 ```http
-POST /api/auth/login
-POST /api/auth/refresh
-POST /api/auth/logout
+POST /auth/login
 ```
 
 #### **Pacientes**
 ```http
-GET    /api/patients
-POST   /api/patients
-GET    /api/patients/{id}
-PUT    /api/patients/{id}
-DELETE /api/patients/{id}
-POST   /api/patients/{id}/transfer
+GET    /patients
+POST   /patients
+GET    /patients/{patient_id}
+PUT    /patients/{patient_id}
+DELETE /patients/{patient_id}
+POST   /patients/{patient_id}/prescriptions
+GET    /patients/{patient_id}/prescriptions
 ```
 
 #### **Prescrições**
 ```http
-GET    /api/prescriptions
-POST   /api/prescriptions
-GET    /api/prescriptions/{id}
-PUT    /api/prescriptions/{id}/diet
-POST   /api/prescriptions/{id}/close
-GET    /api/prescriptions/patient/{patient_id}
+GET    /prescriptions
+GET    /prescriptions/{prescription_id}
+GET    /prescriptions/{prescription_id}/history
+PUT    /prescriptions/{prescription_id}
+POST   /prescriptions/{prescription_id}/encerrar
 ```
 
 #### **Relatórios**
 ```http
-POST   /api/reports/prescriptions
-POST   /api/reports/patients
-POST   /api/reports/diets
-POST   /api/reports/dashboard
+GET    /reports/dietas
+GET    /reports/dietas/export
+GET    /reports/evolucao/{patient_id}
+GET    /reports/alteracoes
 ```
 
 #### **Usuários**
 ```http
-GET    /api/users
-POST   /api/users
-GET    /api/users/{cpf}
-PUT    /api/users/{cpf}
-DELETE /api/users/{cpf}
-PATCH  /api/users/{cpf}/activate
-PATCH  /api/users/{cpf}/deactivate
+POST   /users
+GET    /users
+GET    /users/me
+GET    /users/{user_id}
+PATCH  /users/{user_id}/status
+```
+
+#### **Notificações**
+```http
+GET    /notifications
+GET    /notifications/count
+PATCH  /notifications/{notif_id}/read
+PATCH  /notifications/read-all
 ```
 
 ---
@@ -1067,7 +1071,7 @@ class UserRepository(JsonRepository):
 ✅ **Arquitetura em camadas** (4 camadas)  
 ✅ **SOLID completo** (todos os 5 princípios)  
 ✅ **3 Padrões de Projeto** (Factory, Observer, Strategy)  
-✅ **70+ testes automatizados**  
+✅ **390+ testes automatizados**  
 ✅ **Documentação completa** (docstrings, README, UML)
 
 ---
@@ -1083,6 +1087,6 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 **Universidade Federal do Cariri - UFCA**  
 **Engenharia de Software - 2026.1**
 
-[⬆ Voltar ao topo](#-sistema-nutricional-hospitalar-snh)
+[⬆️ Voltar ao topo](#-sistema-nutricional-hospitalar-snh)
 
 </div>

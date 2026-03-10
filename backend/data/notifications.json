@@ -255,7 +255,58 @@
     "mensagem": "[SNH] Nova prescrição criada\nPaciente: test1 | Setor: Cardiologia\nDieta: DietaOral | Responsável: Dra. Ana Nutricionista",
     "patient_id": null,
     "prioridade": "normal",
-    "lida": false,
-    "criado_em": "2026-03-10T12:38:28.664011"
+    "lida": true,
+    "criado_em": "2026-03-10T12:38:28.664011",
+    "lida_em": "2026-03-10T13:46:48.643011"
+  },
+  {
+    "id": "6dcc5e16-0468-4db9-a51b-3890b65b63ee",
+    "destinatario": "copeiro@hospital.com",
+    "mensagem": "[SNH] Nova prescrição criada\nPaciente: teste | Setor: Pediatria\nDieta: DietaOral | Responsável: Dra. Ana Nutricionista",
+    "patient_id": null,
+    "prioridade": "normal",
+    "lida": true,
+    "criado_em": "2026-03-10T13:11:52.135670",
+    "lida_em": "2026-03-10T13:46:48.631520"
+  },
+  {
+    "id": "f7f7dc5c-dd27-4e24-bf41-e8078041c0c4",
+    "destinatario": "copeiro@hospital.com",
+    "mensagem": "[SNH] Nova prescrição criada\nPaciente: teste | Setor: Cardiologia\nDieta: DietaOral | Responsável: Dra. Ana Nutricionista",
+    "patient_id": null,
+    "prioridade": "normal",
+    "lida": true,
+    "criado_em": "2026-03-10T13:14:48.043457",
+    "lida_em": "2026-03-10T13:46:48.619677"
+  },
+  {
+    "id": "875e8f46-5f64-4605-9fc9-2799871b53c7",
+    "destinatario": "copeiro@hospital.com",
+    "mensagem": "[SNH] Nova prescrição criada\nPaciente: test2 | Setor: Cardiologia\nDieta: DietaOral | Responsável: Dra. Ana Nutricionista",
+    "patient_id": null,
+    "prioridade": "normal",
+    "lida": true,
+    "criado_em": "2026-03-10T13:15:18.509699",
+    "lida_em": "2026-03-10T13:46:48.610978"
+  },
+  {
+    "id": "236f9f6b-b9bf-4bb5-8c07-85f1a1900353",
+    "destinatario": "copeiro@hospital.com",
+    "mensagem": "[SNH] Nova prescrição criada\nPaciente: teste | Setor: Cardiologia\nDieta: DietaOral | Responsável: Dra. Ana Nutricionista",
+    "patient_id": null,
+    "prioridade": "normal",
+    "lida": true,
+    "criado_em": "2026-03-10T13:24:26.317419",
+    "lida_em": "2026-03-10T13:46:48.597578"
+  },
+  {
+    "id": "e9413ef2-4c47-4efa-a11e-1d8371fd2738",
+    "destinatario": "copeiro@hospital.com",
+    "mensagem": "[SNH] Prescrição #4f276cea-8bce-4cb4-8911-7859bd70b1dd - Alteração de dieta\nPaciente: teste | Setor: Cardiologia\nDieta alterada de DietaOral para DietaParenteral",
+    "patient_id": null,
+    "prioridade": "normal",
+    "lida": true,
+    "criado_em": "2026-03-10T13:24:26.318860",
+    "lida_em": "2026-03-10T13:46:48.595586"
   }
 ]

@@ -3,8 +3,12 @@
 from datetime import datetime
 from typing import Union, TYPE_CHECKING
 
+from .setorclin import SetorClinico
+
 if TYPE_CHECKING:
-    from .setorclin import SetorClinico
+    from .setorclin import SetorClinico as _SetorClinico
+
+__all__ = ["Paciente", "SetorClinico"]
 
 
 class Paciente:
@@ -49,9 +53,7 @@ class Paciente:
             TypeError: Se setorClinico não for instância de SetorClinico.
             ValueError: Se o leito já estiver ocupado no setor.
         """
-        from .setorclin import SetorClinico as SC
-
-        if not isinstance(setorClinico, SC):
+        if not isinstance(setorClinico, SetorClinico):
             raise TypeError(
                 f"setorClinico deve ser uma instância de SetorClinico, "
                 f"recebido: {type(setorClinico).__name__}"

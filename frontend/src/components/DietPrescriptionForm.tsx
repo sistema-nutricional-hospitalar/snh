@@ -32,7 +32,12 @@ const DIET_DESCRIPTIONS: Record<string, string[]> = {
   ],
 };
 
-const CONSISTENCY_OPTIONS = ['Normal', 'Pastosa', 'Líquida', 'Branda'];
+const CONSISTENCY_OPTIONS = [
+  { label: 'Normal', value: 'normal' },
+  { label: 'Pastosa', value: 'pastosa' },
+  { label: 'Líquida', value: 'liquida' },
+  { label: 'Mole', value: 'mole' },
+];
 const VIAS_INFUSAO        = ['nasogástrica', 'nasoentérica', 'gastrostomia', 'jejunostomia', 'cateter central'];
 const TIPOS_EQUIPO        = ['bomba', 'gravitacional'];  // 'seringa' removido: backend só aceita bomba/gravitacional
 const TIPOS_ACESSO        = ['periférico', 'central', 'cateter central', 'picc'];
@@ -46,6 +51,15 @@ const TIPOS_MISTA_COMPONENTE: TipoDieta[] = ['oral', 'enteral', 'parenteral'];
 
 const COMMON_RESTRICTIONS = ['Sal', 'Açúcar', 'Lactose', 'Glúten', 'Conservantes', 'Corantes', 'Gordura Trans', 'Fritura'];
 const COMMON_SUPPLEMENTS  = ['Vitamina D', 'Vitamina B12', 'Complexo B', 'Vitamina C', 'Ferro', 'Cálcio', 'Magnésio', 'Ômega 3'];
+
+const normalizeTextura = (v?: string | null) => {
+  if (!v) return null;
+  const lower = v.toLowerCase();
+  if (lower === 'branda') return 'mole';
+  if (lower === 'líquida' || lower === 'liquida') return 'liquida';
+  if (lower === 'pastosa' || lower === 'normal' || lower === 'mole') return lower;
+  return lower;
+};
 
 interface ComponenteMisto {
   tipo: 'oral' | 'enteral' | 'parenteral';
@@ -107,7 +121,7 @@ export const DietPrescriptionForm: React.FC<Props> = ({ patient, activePrescript
   const [saving,     setSaving]    = useState(false);
 
   // Oral
-  const [consistencia,    setConsistencia]   = useState(existing?.consistencia ?? 'Normal');
+  const [consistencia,    setConsistencia]   = useState(normalizeTextura(existing?.consistencia) ?? 'normal');
   const [numRefeicoes,    setNumRefeicoes]   = useState('5');
 
   // Enteral — pré-preenchido da prescrição existente quando disponível
@@ -174,7 +188,7 @@ export const DietPrescriptionForm: React.FC<Props> = ({ patient, activePrescript
       };
 
       if (tipo === 'oral') {
-        dados_dieta.textura          = consistencia.toLowerCase();
+        dados_dieta.textura          = consistencia;
         dados_dieta.numero_refeicoes = parseInt(numRefeicoes) || 5;
         dados_dieta.tipo_refeicao    = 'desjejum';
       } else if (tipo === 'enteral') {
@@ -285,7 +299,7 @@ export const DietPrescriptionForm: React.FC<Props> = ({ patient, activePrescript
                   <Select value={consistencia} onValueChange={setConsistencia}>
                     <SelectTrigger className={selectCls}><SelectValue /></SelectTrigger>
                     <SelectContent className="bg-white">
-                      {CONSISTENCY_OPTIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      {CONSISTENCY_OPTIONS.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -425,7 +439,7 @@ export const DietPrescriptionForm: React.FC<Props> = ({ patient, activePrescript
                             <Select value={comp.textura} onValueChange={(v) => updateComponente(i, { textura: v })}>
                               <SelectTrigger className="bg-white border border-gray-300 h-8 text-sm"><SelectValue /></SelectTrigger>
                               <SelectContent className="bg-white">
-                                {CONSISTENCY_OPTIONS.map(c => <SelectItem key={c} value={c.toLowerCase()}>{c}</SelectItem>)}
+                                {CONSISTENCY_OPTIONS.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                               </SelectContent>
                             </Select>
                           </div>
@@ -578,3 +592,5 @@ export const DietPrescriptionForm: React.FC<Props> = ({ patient, activePrescript
     </div>
   );
 };
+
+

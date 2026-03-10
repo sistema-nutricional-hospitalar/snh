@@ -51,7 +51,7 @@ const DashboardHome: React.FC<{ onNavigate: (s: Screen) => void }> = ({ onNaviga
       icon: Users,
       color: 'text-blue-600',
       bg: 'bg-blue-50',
-      show: ['admin', 'nutricionista'],
+      show: ['admin', 'nutricionista', 'medico', 'enfermeiro'],
     },
     {
       label: 'Notificações',
@@ -60,7 +60,7 @@ const DashboardHome: React.FC<{ onNavigate: (s: Screen) => void }> = ({ onNaviga
       icon: Bell,
       color: 'text-amber-600',
       bg: 'bg-amber-50',
-      show: ['admin', 'nutricionista', 'copeiro'],
+      show: ['admin', 'nutricionista', 'copeiro', 'medico', 'enfermeiro'],
     },
   ].filter((s) => s.show.includes(role ?? ''));
 
@@ -104,6 +104,20 @@ const DashboardHome: React.FC<{ onNavigate: (s: Screen) => void }> = ({ onNaviga
           )}
           {role === 'copeiro' && (
             <>
+              <QuickAction icon={Monitor}  label="Painel de dietas"      onClick={() => onNavigate('touch-display')} />
+              <QuickAction icon={Bell}     label="Notificações"          onClick={() => onNavigate('notifications')} badge={unreadCount} />
+            </>
+          )}
+          {role === 'medico' && (
+            <>
+              <QuickAction icon={Users}    label="Ver pacientes"         onClick={() => onNavigate('patients')} />
+              <QuickAction icon={Monitor}  label="Painel de dietas"      onClick={() => onNavigate('touch-display')} />
+              <QuickAction icon={Bell}     label="Notificações"          onClick={() => onNavigate('notifications')} badge={unreadCount} />
+            </>
+          )}
+          {role === 'enfermeiro' && (
+            <>
+              <QuickAction icon={Users}    label="Ver pacientes"         onClick={() => onNavigate('patients')} />
               <QuickAction icon={Monitor}  label="Painel de dietas"      onClick={() => onNavigate('touch-display')} />
               <QuickAction icon={Bell}     label="Notificações"          onClick={() => onNavigate('notifications')} badge={unreadCount} />
             </>
@@ -161,7 +175,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       id: 'patients' as Screen, label: 'Pacientes', icon: Users,
-      roles: ['admin', 'nutricionista'],
+      roles: ['admin', 'nutricionista', 'medico', 'enfermeiro'],
     },
     {
       id: 'add-patient' as Screen, label: 'Novo Paciente', icon: UserPlus,
@@ -169,11 +183,11 @@ export const Dashboard: React.FC = () => {
     },
     {
       id: 'touch-display' as Screen, label: 'Painel de Dietas', icon: Monitor,
-      roles: ['copeiro', 'nutricionista'],
+      roles: ['copeiro', 'nutricionista', 'medico', 'enfermeiro'],
     },
     {
       id: 'notifications' as Screen, label: 'Notificações', icon: Bell,
-      roles: ['admin', 'nutricionista', 'copeiro'],
+      roles: ['admin', 'nutricionista', 'copeiro', 'medico', 'enfermeiro'],
       badge: unreadCount,
     },
     {
@@ -191,6 +205,26 @@ export const Dashboard: React.FC = () => {
     setSidebarOpen(false);
     if (s !== 'patient-detail') setSelectedPatient(null);
   };
+
+  // Hash-based navigation (e.g. #/touch-display?patient_id=...)
+  React.useEffect(() => {
+    const applyHash = () => {
+      const hash = window.location.hash.replace(/^#\/?/, '');
+      if (!hash) return;
+      const [path] = hash.split('?', 1);
+      if (path === 'touch-display') navigate('touch-display');
+      if (path === 'notifications') navigate('notifications');
+      if (path === 'patients') navigate('patients');
+    };
+    const handleNavigate = (e: Event) => {
+      const detail = (e as CustomEvent).detail ?? {};
+      if (detail.screen) navigate(detail.screen as Screen);
+    };
+    applyHash();
+    window.addEventListener('hashchange', applyHash);
+    window.addEventListener('snh:navigate', handleNavigate as EventListener);
+    return () => window.removeEventListener('hashchange', applyHash);
+  }, []);
 
   const handleSelectPatient = (p: Patient) => {
     setSelectedPatient(p);
@@ -234,12 +268,16 @@ export const Dashboard: React.FC = () => {
     nutricionista: 'Nutricionista',
     copeiro: 'Copeiro',
     admin: 'Administrador',
+    medico: 'Médico',
+    enfermeiro: 'Enfermeiro',
   };
 
   const roleBadgeColor: Record<string, string> = {
     nutricionista: 'bg-emerald-100 text-emerald-800',
     copeiro:       'bg-amber-100 text-amber-800',
     admin:         'bg-blue-100 text-blue-800',
+    medico:        'bg-indigo-100 text-indigo-800',
+    enfermeiro:    'bg-teal-100 text-teal-800',
   };
 
   return (

@@ -276,5 +276,108 @@
     "criado_em": "2026-03-10T12:38:28.663946",
     "atualizado_em": "2026-03-10T12:38:28.663947",
     "usuario_responsavel": "Dra. Ana Nutricionista"
+  },
+  {
+    "id": "6ff680df-fe50-4766-82f3-bce49bced227",
+    "patient_id": "294cd19f-20e1-4659-84c6-e6804cd29c34",
+    "setor_id": "3f69dfbc-1f5a-4d49-b564-babdc9bf7aee",
+    "dieta": {
+      "ativa": true,
+      "criado_em": "2026-03-10T13:11:52.135505",
+      "usuario_responsavel": "Dra. Ana Nutricionista",
+      "itens": [],
+      "tipo": "oral",
+      "dados": {
+        "textura": "normal",
+        "numero_refeicoes": 5,
+        "tipo_refeicao": "desjejum",
+        "descricao": "Dieta Geral",
+        "usuario_responsavel": "Dra. Ana Nutricionista",
+        "calorias": null
+      }
+    },
+    "historico": [
+      {
+        "data_hora": "2026-03-10T13:11:52.135636",
+        "tipo_alteracao": "Criação de prescrição",
+        "descricao": "Prescrição criada com dieta DietaOral",
+        "usuario": "Dra. Ana Nutricionista"
+      }
+    ],
+    "ativa": true,
+    "criado_em": "2026-03-10T13:11:52.135624",
+    "atualizado_em": "2026-03-10T13:11:52.135625",
+    "usuario_responsavel": "Dra. Ana Nutricionista"
+  },
+  {
+    "id": "4f276cea-8bce-4cb4-8911-7859bd70b1dd",
+    "patient_id": "05e4c366-0653-4ca2-a214-7e77d144e660",
+    "setor_id": "8715a109-b613-482f-8412-391c6f125933",
+    "dieta": {
+      "ativa": true,
+      "criado_em": "2026-03-10T13:24:26.318747",
+      "usuario_responsavel": "Dra. Ana Nutricionista",
+      "itens": [],
+      "tipo": "parenteral",
+      "dados": {
+        "tipo_acesso": "central",
+        "volume_ml_dia": 2000.0,
+        "composicao": "Glicose 50% + Aminoácidos 10% + Lipídios 20%",
+        "velocidade_ml_h": 83.0,
+        "descricao": "— teste",
+        "usuario_responsavel": "Dra. Ana Nutricionista",
+        "calorias": 2000
+      }
+    },
+    "historico": [
+      {
+        "data_hora": "2026-03-10T13:24:26.317360",
+        "tipo_alteracao": "Criação de prescrição",
+        "descricao": "Prescrição criada com dieta DietaOral",
+        "usuario": "Dra. Ana Nutricionista"
+      },
+      {
+        "data_hora": "2026-03-10T13:24:26.318831",
+        "tipo_alteracao": "Alteração de dieta",
+        "descricao": "Dieta alterada de DietaOral para DietaParenteral",
+        "usuario": "Dra. Ana Nutricionista"
+      }
+    ],
+    "ativa": true,
+    "criado_em": "2026-03-10T13:24:26.317348",
+    "atualizado_em": "2026-03-10T13:24:26.328678",
+    "usuario_responsavel": "Dra. Ana Nutricionista"
+  },
+  {
+    "id": "873640b7-284e-4252-8818-c4a3d201a9ee",
+    "patient_id": "b0209a53-c3f2-48b0-b00e-68055079940e",
+    "setor_id": "8715a109-b613-482f-8412-391c6f125933",
+    "dieta": {
+      "ativa": true,
+      "criado_em": "2026-03-10T13:15:18.509660",
+      "usuario_responsavel": "Dra. Ana Nutricionista",
+      "itens": [],
+      "tipo": "oral",
+      "dados": {
+        "textura": "normal",
+        "numero_refeicoes": 5,
+        "tipo_refeicao": "desjejum",
+        "descricao": "Dieta Geral",
+        "usuario_responsavel": "Dra. Ana Nutricionista",
+        "calorias": null
+      }
+    },
+    "historico": [
+      {
+        "data_hora": "2026-03-10T13:15:18.509672",
+        "tipo_alteracao": "Criação de prescrição",
+        "descricao": "Prescrição criada com dieta DietaOral",
+        "usuario": "Dra. Ana Nutricionista"
+      }
+    ],
+    "ativa": true,
+    "criado_em": "2026-03-10T13:15:18.509668",
+    "atualizado_em": "2026-03-10T13:15:18.509669",
+    "usuario_responsavel": "Dra. Ana Nutricionista"
   }
 ]

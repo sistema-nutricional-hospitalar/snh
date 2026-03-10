@@ -50,6 +50,8 @@ function mapPrescricao(raw: any): Prescricao {
       restricoes:   dados.restricoes ?? [],
       suplementos:  dados.suplementos ?? [],
       observacoes:  dados.observacoes ?? null,
+      numero_refeicoes: dados.numero_refeicoes ?? null,
+      tipo_refeicao:    dados.tipo_refeicao ?? null,
       // Campos enteral
       via_infusao:                dados.via_infusao ?? null,
       velocidade_ml_h:            dados.velocidade_ml_h ?? null,
@@ -60,6 +62,8 @@ function mapPrescricao(raw: any): Prescricao {
       tipo_acesso:  dados.tipo_acesso ?? null,
       volume_ml_dia: dados.volume_ml_dia ?? null,
       composicao:   dados.composicao ?? null,
+      // Campos mista
+      componentes_raw: dados.componentes_raw ?? null,
     },
     status:      raw.ativa ? 'ativa' : 'encerrada',
     data_inicio: raw.criado_em ?? '',
@@ -225,7 +229,7 @@ export async function apiGetUsers(): Promise<User[]> {
 
 export async function apiCreateUser(data: {
   nome: string; email: string; senha: string; tipo: string;
-  setor?: string; crn?: string; turno?: string; ativo?: boolean;
+  setor?: string; crn?: string; crm?: string; coren?: string; especialidade?: string; turno?: string; ativo?: boolean;
 }): Promise<User> {
   const res = await client.post<any>('/users', data);
   return mapUser(res.data);

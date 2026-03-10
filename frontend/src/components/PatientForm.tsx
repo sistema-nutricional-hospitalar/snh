@@ -13,11 +13,30 @@ import { toast } from 'sonner';
 
 const SECTORS = ['UTI', 'Cardiologia', 'Neurologia', 'Pediatria', 'Oncologia', 'Ortopedia', 'Cirurgia Geral', 'Emergência'];
 const DIET_TYPES = ['Dieta Geral', 'Dieta Hipossódica', 'Dieta Hipocalórica', 'Dieta Diabética', 'Dieta Líquida', 'Dieta Pastosa', 'Dieta Enteral Padrão', 'Dieta Enteral Hipercalórica'];
-const CONSISTENCY: Record<string, string[]> = {
-  oral:       ['Normal', 'Pastosa', 'Líquida', 'Branda'],
-  enteral:    ['Líquida', 'Semi-líquida'],
-  parenteral: ['IV'],
-  mista:      ['Combinada'],
+const VIAS_INFUSAO = ['nasogástrica', 'nasoentérica', 'gastrostomia', 'jejunostomia', 'cateter central'];
+const TIPOS_EQUIPO = ['bomba', 'gravitacional'];
+const TIPOS_ACESSO = ['periférico', 'central', 'cateter central', 'picc'];
+const COMPOSICOES_PADRAO = [
+  'Glicose 50% + Aminoácidos 10% + Lipídios 20%',
+  'Glicose 25% + Aminoácidos 8.5%',
+  'Aminoácidos 10% + Glicose 50%',
+  'Solução 3 em 1 (glicose + AA + lipídios)',
+];
+const CONSISTENCY: Record<string, { label: string; value: string }[]> = {
+  // Backend aceita: normal, pastosa, liquida, mole
+  oral: [
+    { label: 'Normal', value: 'normal' },
+    { label: 'Pastosa', value: 'pastosa' },
+    { label: 'Líquida', value: 'liquida' },
+    { label: 'Mole', value: 'mole' },
+  ],
+  // Consistência não é usada em enteral/parenteral/mista, mas mantemos para UI
+  enteral: [
+    { label: 'Líquida', value: 'liquida' },
+    { label: 'Semi-líquida', value: 'semi-liquida' },
+  ],
+  parenteral: [{ label: 'IV', value: 'iv' }],
+  mista: [{ label: 'Combinada', value: 'combinada' }],
 };
 
 interface Props { onSuccess: () => void; }
@@ -42,9 +61,30 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
     // dieta inicial
     dietTipo: 'oral' as 'oral' | 'enteral' | 'parenteral' | 'mista',
     dietDescricao: 'Dieta Geral',
-    dietConsistencia: 'Normal',
+    dietConsistencia: 'normal',
     dietCalorias: '2000',
-    dietObs: '',
+        dietObs: '',
+    // enteral
+    enteralViaInfusao: 'nasogástrica',
+    enteralVelocidade: '60',
+    enteralQtdGramas: '300',
+    enteralPorcoes: '5',
+    enteralTipoEquipo: 'bomba',
+    // parenteral
+    parenteralTipoAcesso: 'central',
+    parenteralVolume: '2000',
+    parenteralComposicao: COMPOSICOES_PADRAO[0],
+    parenteralVelocidade: '83',
+    // mista (oral + enteral)
+    mistaPercOral: '70',
+    mistaPercEnteral: '30',
+    mistaTextura: 'normal',
+    mistaNumeroRefeicoes: '5',
+    mistaViaInfusao: 'nasogástrica',
+    mistaVelocidade: '60',
+    mistaQtdGramas: '300',
+    mistaPorcoes: '5',
+    mistaTipoEquipo: 'bomba',
   });
 
   const [newAlergia, setNewAlergia]     = useState('');
@@ -72,6 +112,29 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
     if (form.quarto.trim() && isNaN(parseInt(form.quarto.trim(), 10))) {
       toast.error('Quarto deve ser um número inteiro.');
       return;
+    }
+    if (form.quarto.trim() && parseInt(form.quarto.trim(), 10) <= 0) {
+      toast.error('Quarto deve ser um número inteiro positivo.');
+      return;
+    }
+    if (form.peso_atual && parseFloat(form.peso_atual) <= 0) {
+      toast.error('Peso deve ser maior que zero.');
+      return;
+    }
+    if (form.altura && parseFloat(form.altura) <= 0) {
+      toast.error('Altura deve ser maior que zero.');
+      return;
+    }
+    if (form.leito && !['A','B','C','D'].includes(form.leito)) {
+      toast.error('Leito inválido.');
+      return;
+    }
+    if (form.dietTipo === 'mista') {
+      const total = (parseFloat(form.mistaPercOral) || 0) + (parseFloat(form.mistaPercEnteral) || 0);
+      if (total < 95 || total > 105) {
+        toast.error(`A soma dos percentuais deve ser 100% (atual: ${total.toFixed(0)}%).`);
+        return;
+      }
     }
 
     if (form.data_nascimento) {
@@ -118,25 +181,41 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
           suplementos: [],
         };
 
-        if (form.dietTipo === 'oral') {
-          dados_dieta.textura          = form.dietConsistencia.toLowerCase();
+                if (form.dietTipo === 'oral') {
+          dados_dieta.textura          = form.dietConsistencia;
           dados_dieta.numero_refeicoes = 5;
           dados_dieta.tipo_refeicao    = 'desjejum';
         } else if (form.dietTipo === 'enteral') {
-          dados_dieta.via_infusao                    = 'nasogástrica';
-          dados_dieta.velocidade_ml_h                = 60;
-          dados_dieta['quantidade_gramas_por_porção'] = 300;
-          dados_dieta.porcoes_diarias                = 5;
-          dados_dieta.tipo_equipo                    = 'bomba';
+          dados_dieta.via_infusao                     = form.enteralViaInfusao;
+          dados_dieta.velocidade_ml_h                 = parseFloat(form.enteralVelocidade) || 60;
+          dados_dieta['quantidade_gramas_por_porção']  = parseFloat(form.enteralQtdGramas) || 300;
+          dados_dieta.porcoes_diarias                 = parseInt(form.enteralPorcoes, 10) || 5;
+          dados_dieta.tipo_equipo                     = form.enteralTipoEquipo;
         } else if (form.dietTipo === 'parenteral') {
-          dados_dieta.tipo_acesso     = 'central';
-          dados_dieta.volume_ml_dia   = 2000;
-          dados_dieta.composicao      = 'Glicose 50% + Aminoácidos 10% + Lipídios 20%';
-          dados_dieta.velocidade_ml_h = 83;
+          dados_dieta.tipo_acesso     = form.parenteralTipoAcesso;
+          dados_dieta.volume_ml_dia   = parseFloat(form.parenteralVolume) || 2000;
+          dados_dieta.composicao      = form.parenteralComposicao;
+          dados_dieta.velocidade_ml_h = parseFloat(form.parenteralVelocidade) || 83;
         } else if (form.dietTipo === 'mista') {
+          const percOral = parseFloat(form.mistaPercOral) || 0;
+          const percEnteral = parseFloat(form.mistaPercEnteral) || 0;
           dados_dieta.componentes_raw = [
-            { tipo: 'oral', percentual: 70, textura: 'normal', numero_refeicoes: 5, tipo_refeicao: 'desjejum' },
-            { tipo: 'enteral', percentual: 30, via_infusao: 'nasogástrica', velocidade_ml_h: 60, 'quantidade_gramas_por_porção': 300, porcoes_diarias: 5, tipo_equipo: 'bomba' },
+            {
+              tipo: 'oral',
+              percentual: percOral,
+              textura: form.mistaTextura,
+              numero_refeicoes: parseInt(form.mistaNumeroRefeicoes, 10) || 5,
+              tipo_refeicao: 'desjejum',
+            },
+            {
+              tipo: 'enteral',
+              percentual: percEnteral,
+              via_infusao: form.mistaViaInfusao,
+              velocidade_ml_h: parseFloat(form.mistaVelocidade) || 60,
+              'quantidade_gramas_por_porção': parseFloat(form.mistaQtdGramas) || 300,
+              porcoes_diarias: parseInt(form.mistaPorcoes, 10) || 5,
+              tipo_equipo: form.mistaTipoEquipo,
+            },
           ];
         }
 
@@ -310,7 +389,7 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Field label="Tipo">
-                <Select value={form.dietTipo} onValueChange={v => setForm(f => ({ ...f, dietTipo: v as 'oral' | 'enteral' | 'parenteral' | 'mista', dietConsistencia: CONSISTENCY[v][0] }))}>
+                <Select value={form.dietTipo} onValueChange={v => setForm(f => ({ ...f, dietTipo: v as 'oral' | 'enteral' | 'parenteral' | 'mista', dietConsistencia: CONSISTENCY[v][0].value }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="oral">Oral</SelectItem>
@@ -328,19 +407,148 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Consistência">
-                <Select value={form.dietConsistencia} onValueChange={v => set('dietConsistencia', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CONSISTENCY[form.dietTipo].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </Field>
+              {form.dietTipo === 'oral' && (
+                <Field label="Consistência">
+                  <Select value={form.dietConsistencia} onValueChange={v => set('dietConsistencia', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CONSISTENCY.oral.map(c => (
+                        <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
               <Field label="Calorias (kcal/dia)">
                 <Input type="number" value={form.dietCalorias}
                   onChange={e => set('dietCalorias', e.target.value)} min="800" max="4000" />
               </Field>
             </div>
+
+            {form.dietTipo === 'enteral' && (
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-5 gap-4">
+                <Field label="Via de Infusão">
+                  <Select value={form.enteralViaInfusao} onValueChange={v => set('enteralViaInfusao', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {VIAS_INFUSAO.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Velocidade (ml/h)">
+                  <Input type="number" value={form.enteralVelocidade}
+                    onChange={e => set('enteralVelocidade', e.target.value)} min="1" />
+                </Field>
+                <Field label="Qtd. por Porção (g)">
+                  <Input type="number" value={form.enteralQtdGramas}
+                    onChange={e => set('enteralQtdGramas', e.target.value)} min="1" />
+                </Field>
+                <Field label="Porções/dia">
+                  <Input type="number" value={form.enteralPorcoes}
+                    onChange={e => set('enteralPorcoes', e.target.value)} min="1" />
+                </Field>
+                <Field label="Tipo de Equipo">
+                  <Select value={form.enteralTipoEquipo} onValueChange={v => set('enteralTipoEquipo', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {TIPOS_EQUIPO.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </div>
+            )}
+
+            {form.dietTipo === 'parenteral' && (
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Field label="Tipo de Acesso">
+                  <Select value={form.parenteralTipoAcesso} onValueChange={v => set('parenteralTipoAcesso', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {TIPOS_ACESSO.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Volume (ml/dia)">
+                  <Input type="number" value={form.parenteralVolume}
+                    onChange={e => set('parenteralVolume', e.target.value)} min="1" />
+                </Field>
+                <Field label="Composição">
+                  <Select value={form.parenteralComposicao} onValueChange={v => set('parenteralComposicao', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {COMPOSICOES_PADRAO.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Velocidade (ml/h)">
+                  <Input type="number" value={form.parenteralVelocidade}
+                    onChange={e => set('parenteralVelocidade', e.target.value)} min="1" />
+                </Field>
+              </div>
+            )}
+
+            {form.dietTipo === 'mista' && (
+              <div className="mt-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Percentual Oral (%)">
+                    <Input type="number" value={form.mistaPercOral}
+                      onChange={e => set('mistaPercOral', e.target.value)} min="0" max="100" />
+                  </Field>
+                  <Field label="Percentual Enteral (%)">
+                    <Input type="number" value={form.mistaPercEnteral}
+                      onChange={e => set('mistaPercEnteral', e.target.value)} min="0" max="100" />
+                  </Field>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Consistência (Oral)">
+                    <Select value={form.mistaTextura} onValueChange={v => set('mistaTextura', v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {CONSISTENCY.oral.map(c => (
+                          <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Refeições/dia (Oral)">
+                    <Input type="number" value={form.mistaNumeroRefeicoes}
+                      onChange={e => set('mistaNumeroRefeicoes', e.target.value)} min="1" />
+                  </Field>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <Field label="Via de Infusão (Enteral)">
+                    <Select value={form.mistaViaInfusao} onValueChange={v => set('mistaViaInfusao', v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {VIAS_INFUSAO.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Velocidade (ml/h)">
+                    <Input type="number" value={form.mistaVelocidade}
+                      onChange={e => set('mistaVelocidade', e.target.value)} min="1" />
+                  </Field>
+                  <Field label="Qtd. por Porção (g)">
+                    <Input type="number" value={form.mistaQtdGramas}
+                      onChange={e => set('mistaQtdGramas', e.target.value)} min="1" />
+                  </Field>
+                  <Field label="Porções/dia">
+                    <Input type="number" value={form.mistaPorcoes}
+                      onChange={e => set('mistaPorcoes', e.target.value)} min="1" />
+                  </Field>
+                  <Field label="Tipo de Equipo">
+                    <Select value={form.mistaTipoEquipo} onValueChange={v => set('mistaTipoEquipo', v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {TIPOS_EQUIPO.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </div>
+              </div>
+            )}
             <div className="mt-4">
               <Field label="Observações da Dieta">
                 <Textarea value={form.dietObs} onChange={e => set('dietObs', e.target.value)}
@@ -369,3 +577,11 @@ const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, 
     {children}
   </div>
 );
+
+
+
+
+
+
+
+

@@ -45,12 +45,14 @@ class NotificacaoInApp(EstrategiaNotificacao):
             True se persistida com sucesso, False em caso de erro.
         """
         try:
-            self._repo.salvar_notificacao(
-                destinatario=destinatario,
-                mensagem=mensagem,
-                prioridade=prioridade,
-                patient_id=patient_id,
-            )
+            payload = {
+                "destinatario": destinatario,
+                "mensagem": mensagem,
+                "prioridade": prioridade,
+            }
+            if patient_id is not None:
+                payload["patient_id"] = patient_id
+            self._repo.salvar_notificacao(**payload)
             return True
         except Exception:
             return False

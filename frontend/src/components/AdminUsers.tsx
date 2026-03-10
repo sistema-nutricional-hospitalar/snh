@@ -18,12 +18,16 @@ const ROLE_LABEL: Record<string, string> = {
   admin: 'Administrador',
   nutricionista: 'Nutricionista',
   copeiro: 'Copeiro',
+  medico: 'Médico',
+  enfermeiro: 'Enfermeiro',
 };
 
 const ROLE_COLOR: Record<string, string> = {
   admin:         'bg-blue-100 text-blue-800',
   nutricionista: 'bg-emerald-100 text-emerald-800',
   copeiro:       'bg-amber-100 text-amber-800',
+  medico:        'bg-indigo-100 text-indigo-800',
+  enfermeiro:    'bg-teal-100 text-teal-800',
 };
 
 export const AdminUsers: React.FC = () => {
@@ -126,9 +130,9 @@ export const AdminUsers: React.FC = () => {
                   <div className="min-w-0">
                     <p className="font-medium truncate">{u.nome}</p>
                     <p className="text-sm text-muted-foreground truncate">{u.email}</p>
-                    {(u.crn || u.turno || u.setor) && (
+                    {(u.crn || u.turno || u.setor || u.crm || u.coren || u.especialidade) && (
                       <p className="text-xs text-muted-foreground">
-                        {u.crn ?? ''}{u.turno ? ` · Turno: ${u.turno}` : ''}{u.setor ? ` · ${u.setor}` : ''}
+                        {u.crn ?? ''}{u.crm ? ` · CRM: ${u.crm}` : ''}{u.coren ? ` · COREN: ${u.coren}` : ''}{u.especialidade ? ` · ${u.especialidade}` : ''}{u.turno ? ` · Turno: ${u.turno}` : ''}{u.setor ? ` · ${u.setor}` : ''}
                       </p>
                     )}
                   </div>
@@ -181,7 +185,10 @@ export const AdminUsers: React.FC = () => {
 const CreateUserDialog: React.FC<{ open: boolean; onClose: () => void; onCreated: () => void }> = ({
   open, onClose, onCreated,
 }) => {
-  const [form, setForm] = useState({ nome: '', email: '', senha: '', tipo: 'copeiro', setor: '', crn: '', turno: '' });
+  const [form, setForm] = useState({
+    nome: '', email: '', senha: '', tipo: 'copeiro',
+    setor: '', crn: '', turno: '', crm: '', coren: '', especialidade: '',
+  });
   const [saving, setSaving] = useState(false);
 
   const set = (k: keyof typeof form, v: string) => setForm(f => ({ ...f, [k]: v }));
@@ -197,11 +204,14 @@ const CreateUserDialog: React.FC<{ open: boolean; onClose: () => void; onCreated
         tipo:  form.tipo === "admin" ? "administrador" : form.tipo as any,
         setor: form.setor || undefined,
         crn:   form.crn   || undefined,
+        crm:   form.crm   || undefined,
+        coren: form.coren || undefined,
+        especialidade: form.especialidade || undefined,
         turno: form.turno || undefined,
         ativo: true,
       });
       toast.success('Usuário criado com sucesso!');
-      setForm({ nome: '', email: '', senha: '', tipo: 'copeiro', setor: '', crn: '', turno: '' });
+      setForm({ nome: '', email: '', senha: '', tipo: 'copeiro', setor: '', crn: '', turno: '', crm: '', coren: '', especialidade: '' });
       onCreated();
     } catch (err: any) {
       const msg = err?.response?.data?.detail ?? 'Erro ao criar usuário.';
@@ -235,6 +245,8 @@ const CreateUserDialog: React.FC<{ open: boolean; onClose: () => void; onCreated
               <SelectContent>
                 <SelectItem value="administrador">Administrador</SelectItem>
                 <SelectItem value="nutricionista">Nutricionista</SelectItem>
+                <SelectItem value="medico">Médico</SelectItem>
+                <SelectItem value="enfermeiro">Enfermeiro</SelectItem>
                 <SelectItem value="copeiro">Copeiro</SelectItem>
               </SelectContent>
             </Select>
@@ -243,6 +255,26 @@ const CreateUserDialog: React.FC<{ open: boolean; onClose: () => void; onCreated
             <Field label="CRN">
               <Input value={form.crn} onChange={e => set('crn', e.target.value)} placeholder="CRN-8/12345" />
             </Field>
+          )}
+          {form.tipo === 'medico' && (
+            <>
+              <Field label="CRM">
+                <Input value={form.crm} onChange={e => set('crm', e.target.value)} placeholder="CRM-SP 000000" />
+              </Field>
+              <Field label="Especialidade">
+                <Input value={form.especialidade} onChange={e => set('especialidade', e.target.value)} placeholder="Clínico geral" />
+              </Field>
+            </>
+          )}
+          {form.tipo === 'enfermeiro' && (
+            <>
+              <Field label="COREN">
+                <Input value={form.coren} onChange={e => set('coren', e.target.value)} placeholder="COREN-SP 000000" />
+              </Field>
+              <Field label="Setor">
+                <Input value={form.setor} onChange={e => set('setor', e.target.value)} placeholder="UTI, Clínica..." />
+              </Field>
+            </>
           )}
           {form.tipo === 'copeiro' && (
             <Field label="Turno">
