@@ -1,6 +1,10 @@
 [
-  {"id": "setor-uti-001", "nome": "UTI"},
-  {"id": "setor-enf-002", "nome": "Enfermaria Geral"},
-  {"id": "setor-cg-003", "nome": "Clínica Geral"},
-  {"id": "setor-ped-004", "nome": "Pediatria"}
+  {
+    "id": "8715a109-b613-482f-8412-391c6f125933",
+    "nome": "Cardiologia"
+  },
+  {
+    "id": "3f69dfbc-1f5a-4d49-b564-babdc9bf7aee",
+    "nome": "Pediatria"
+  }
 ]

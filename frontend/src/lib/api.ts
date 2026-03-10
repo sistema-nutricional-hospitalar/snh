@@ -35,28 +35,45 @@ client.interceptors.response.use(
 function mapPrescricao(raw: any): Prescricao {
   const dieta = raw.dieta ?? {};
   const dados = dieta.dados ?? {};
+  // usuario_responsavel no backend armazena o NOME do nutricionista (não o ID)
+  const nomeResponsavel = raw.usuario_responsavel ?? dieta.usuario_responsavel ?? dados.usuario_responsavel ?? '';
   return {
-    id:               raw.id,
-    paciente_id:      raw.patient_id ?? raw.paciente_id ?? '',
-    nutricionista_id: raw.usuario_responsavel ?? '',
+    id:                  raw.id,
+    paciente_id:         raw.patient_id ?? raw.paciente_id ?? '',
+    nutricionista_id:    nomeResponsavel,
+    nutricionista_nome:  nomeResponsavel || undefined,
     dieta_atual: {
-      tipo:        dieta.tipo ?? 'oral',
-      descricao:   dados.descricao ?? dados.textura ?? dieta.tipo ?? '',
-      calorias:    dados.calorias ?? null,
+      tipo:         dieta.tipo ?? 'oral',
+      descricao:    dados.descricao ?? dados.textura ?? dieta.tipo ?? '',
+      calorias:     dados.calorias ?? null,
       consistencia: dados.textura ?? dados.consistencia ?? null,
-      restricoes:  dados.restricoes ?? [],
-      suplementos: dados.suplementos ?? [],
-      observacoes: dados.observacoes ?? null,
+      restricoes:   dados.restricoes ?? [],
+      suplementos:  dados.suplementos ?? [],
+      observacoes:  dados.observacoes ?? null,
+      numero_refeicoes: dados.numero_refeicoes ?? null,
+      tipo_refeicao:    dados.tipo_refeicao ?? null,
+      // Campos enteral
+      via_infusao:                dados.via_infusao ?? null,
+      velocidade_ml_h:            dados.velocidade_ml_h ?? null,
+      quantidade_gramas_por_porcao: dados['quantidade_gramas_por_porção'] ?? null,
+      porcoes_diarias:            dados.porcoes_diarias ?? null,
+      tipo_equipo:                dados.tipo_equipo ?? null,
+      // Campos parenteral
+      tipo_acesso:  dados.tipo_acesso ?? null,
+      volume_ml_dia: dados.volume_ml_dia ?? null,
+      composicao:   dados.composicao ?? null,
+      // Campos mista
+      componentes_raw: dados.componentes_raw ?? null,
     },
     status:      raw.ativa ? 'ativa' : 'encerrada',
     data_inicio: raw.criado_em ?? '',
     data_fim:    raw.encerrado_em ?? null,
     historico:   (raw.historico ?? []).map((h: any) => ({
-      data:          h.data_hora ?? '',
+      data:           h.data_hora ?? '',
       dieta_anterior: h.descricao ?? '',
-      dieta_nova:    '',
-      motivo:        h.descricao ?? '',
-      alterado_por:  h.usuario ?? '',
+      dieta_nova:     '',
+      motivo:         h.descricao ?? '',
+      alterado_por:   h.usuario ?? '',
     })),
     observacoes: dados.observacoes ?? null,
   };
@@ -78,6 +95,15 @@ function mapUser(raw: any): User {
   };
 }
 
+// ─── Mapper: backend patient JSON → frontend Patient type ─────────────────────
+// Backend returns `data_nasc`, frontend type uses `data_nascimento`
+function mapPatient(raw: any): Patient {
+  return {
+    ...raw,
+    data_nascimento: raw.data_nascimento ?? raw.data_nasc ?? '',
+  } as Patient;
+}
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export async function apiLogin(data: LoginRequest): Promise<LoginResponse> {
   const res = await client.post<LoginResponse>('/auth/login', {
@@ -96,23 +122,23 @@ export async function apiGetMe(): Promise<User> {
 export async function apiGetPatients(params?: {
   setor_id?: string; busca?: string; ativo?: boolean;
 }): Promise<Patient[]> {
-  const res = await client.get<Patient[]>('/patients', { params });
-  return res.data;
+  const res = await client.get<any[]>('/patients', { params });
+  return res.data.map(mapPatient);
 }
 
 export async function apiGetPatient(id: string): Promise<Patient> {
-  const res = await client.get<Patient>(`/patients/${id}`);
-  return res.data;
+  const res = await client.get<any>(`/patients/${id}`);
+  return mapPatient(res.data);
 }
 
 export async function apiCreatePatient(data: Partial<Patient>): Promise<Patient> {
-  const res = await client.post<Patient>('/patients', data);
-  return res.data;
+  const res = await client.post<any>('/patients', data);
+  return mapPatient(res.data);
 }
 
 export async function apiUpdatePatient(id: string, data: Partial<Patient>): Promise<Patient> {
-  const res = await client.put<Patient>(`/patients/${id}`, data);
-  return res.data;
+  const res = await client.put<any>(`/patients/${id}`, data);
+  return mapPatient(res.data);
 }
 
 export async function apiDeletePatient(id: string): Promise<void> {
@@ -157,8 +183,8 @@ export async function apiGetPrescriptionHistory(id: string) {
 }
 
 // ─── Notifications ────────────────────────────────────────────────────────────
-export async function apiGetNotifications(): Promise<Notificacao[]> {
-  const res = await client.get<Notificacao[]>('/notifications');
+export async function apiGetNotifications(apenasNaoLidas = false): Promise<Notificacao[]> {
+  const res = await client.get<Notificacao[]>('/notifications', { params: { apenas_nao_lidas: apenasNaoLidas } });
   return res.data;
 }
 
@@ -203,7 +229,7 @@ export async function apiGetUsers(): Promise<User[]> {
 
 export async function apiCreateUser(data: {
   nome: string; email: string; senha: string; tipo: string;
-  setor?: string; crn?: string; turno?: string; ativo?: boolean;
+  setor?: string; crn?: string; crm?: string; coren?: string; especialidade?: string; turno?: string; ativo?: boolean;
 }): Promise<User> {
   const res = await client.post<any>('/users', data);
   return mapUser(res.data);

@@ -109,6 +109,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [currentUser, token, refreshPatients, refreshNotifications]);
 
+  // ─── Polling de notificações a cada 30s ──────────────────────────────────
+  useEffect(() => {
+    if (!currentUser || !token) return;
+    const interval = setInterval(() => {
+      refreshNotifications();
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [currentUser, token, refreshNotifications]);
+
   const unreadCount = notifications.filter(n => !n.lida).length;
 
   return (

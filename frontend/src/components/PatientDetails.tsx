@@ -6,17 +6,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Skeleton } from './ui/skeleton';
 import {
   ArrowLeft, Edit, Calendar, User, Heart, AlertTriangle,
-  Clock, Utensils, RefreshCw,
+  Clock, Utensils, RefreshCw, Trash2,
 } from 'lucide-react';
 import { Patient, Prescricao } from '../types';
 import { DietPrescriptionForm } from './DietPrescriptionForm';
 import { DietHistory } from './DietHistory';
-import { apiGetPatientPrescriptions } from '../lib/api';
+import { apiGetPatientPrescriptions, apiDeletePatient } from '../lib/api';
 import { useApp } from '../contexts/AppContext';
 
 interface Props {
   patient: Patient;
   onBack: () => void;
+  onDelete?: () => Promise<void>;
 }
 
 function calcAge(dob: string) {
@@ -40,13 +41,28 @@ function bmiInfo(weight?: number | null, height?: number | null) {
   return { value: bmi.toFixed(1), cat, color };
 }
 
-export const PatientDetails: React.FC<Props> = ({ patient, onBack }) => {
+export const PatientDetails: React.FC<Props> = ({ patient, onBack, onDelete }) => {
   const { currentUser } = useApp();
   const [showPrescForm, setShowPrescForm] = useState(false);
   const [prescricoes, setPrescricoes]     = useState<Prescricao[]>([]);
   const [loadingPresc, setLoadingPresc]   = useState(true);
 
   const canPrescribe = ['nutricionista', 'admin'].includes(currentUser?.tipo ?? '');
+  const canDelete    = ['nutricionista', 'admin'].includes(currentUser?.tipo ?? '');
+
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await apiDeletePatient(patient.id);
+      await onDelete?.();  // aguarda refresh antes de navegar
+    } catch {
+      setDeleting(false);
+      setShowConfirmDelete(false);
+    }
+  };
 
   const loadPrescricoes = () => {
     setLoadingPresc(true);
@@ -97,6 +113,51 @@ export const PatientDetails: React.FC<Props> = ({ patient, onBack }) => {
               <Edit className="w-4 h-4 mr-2" />
               {activePrescricao ? 'Alterar Dieta' : 'Prescrever Dieta'}
             </Button>
+          )}
+          {canDelete && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-200 text-red-600 hover:bg-red-50"
+              onClick={() => setShowConfirmDelete(true)}
+            >
+              <Trash2 className="w-4 h-4 mr-1" />Excluir
+            </Button>
+          )}
+
+          {/* Modal de confirmação */}
+          {showConfirmDelete && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-red-100 rounded-full p-2">
+                    <Trash2 className="w-5 h-5 text-red-600" />
+                  </div>
+                  <h2 className="text-base font-semibold">Excluir paciente?</h2>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Tem certeza que deseja excluir <strong>{patient.nome}</strong>? Esta ação é irreversível.
+                </p>
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowConfirmDelete(false)}
+                    disabled={deleting}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                  >
+                    {deleting ? <><RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />Excluindo...</> : 'Confirmar exclusão'}
+                  </Button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -226,6 +287,39 @@ export const PatientDetails: React.FC<Props> = ({ patient, onBack }) => {
                         <p className="text-muted-foreground mb-1">Descrição</p>
                         <p className="font-semibold text-base">{diet.descricao}</p>
                       </div>
+
+                      {/* Detalhes técnicos — Enteral */}
+                      {diet.tipo === 'enteral' && (diet.via_infusao || diet.velocidade_ml_h != null) && (
+                        <div>
+                          <p className="text-muted-foreground mb-1.5">Parâmetros Enterais</p>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            {diet.via_infusao && (
+                              <div className="bg-blue-50 rounded-lg p-2.5">
+                                <p className="text-xs text-muted-foreground">Via de Infusão</p>
+                                <p className="font-medium capitalize">{diet.via_infusao}</p>
+                              </div>
+                            )}
+                            {diet.velocidade_ml_h != null && (
+                              <div className="bg-blue-50 rounded-lg p-2.5">
+                                <p className="text-xs text-muted-foreground">Velocidade</p>
+                                <p className="font-medium">{diet.velocidade_ml_h} ml/h</p>
+                              </div>
+                            )}
+                            {diet.quantidade_gramas_por_porcao != null && (
+                              <div className="bg-blue-50 rounded-lg p-2.5">
+                                <p className="text-xs text-muted-foreground">Qtd. por Porção</p>
+                                <p className="font-medium">{diet.quantidade_gramas_por_porcao} g</p>
+                              </div>
+                            )}
+                            {diet.porcoes_diarias != null && (
+                              <div className="bg-blue-50 rounded-lg p-2.5">
+                                <p className="text-xs text-muted-foreground">Porções/dia · Equipo</p>
+                                <p className="font-medium">{diet.porcoes_diarias}x · {diet.tipo_equipo ?? '—'}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                       {diet.restricoes?.length > 0 && (
                         <div>

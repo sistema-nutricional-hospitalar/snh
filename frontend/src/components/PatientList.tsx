@@ -12,8 +12,6 @@ import {
   MapPin, RefreshCw, UserX,
 } from 'lucide-react';
 
-const SECTORS = ['UTI', 'Cardiologia', 'Neurologia', 'Pediatria', 'Oncologia', 'Ortopedia', 'Cirurgia Geral', 'Emergência'];
-
 interface PatientListProps {
   onSelectPatient?: (patient: Patient) => void;
 }
@@ -33,12 +31,18 @@ export const PatientList: React.FC<PatientListProps> = ({ onSelectPatient }) => 
   const [search, setSearch]         = useState('');
   const [sector, setSector]         = useState('all');
 
+  // Setores derivados dinamicamente dos pacientes carregados
+  const sectors = useMemo(() => {
+    const names = patients.map(p => p.setor_nome).filter(Boolean) as string[];
+    return [...new Set(names)].sort();
+  }, [patients]);
+
   const filtered = useMemo(() => {
     return patients.filter((p) => {
       const q = search.toLowerCase();
       const matchSearch =
         (p.nome?.toLowerCase().includes(q)) ||
-        (p.quarto?.toLowerCase().includes(q)) ||
+        (String(p.quarto ?? '').toLowerCase().includes(q)) ||
         (p.id?.includes(q));
       const matchSector = sector === 'all' || p.setor_nome === sector;
       return matchSearch && matchSector;
@@ -110,7 +114,7 @@ export const PatientList: React.FC<PatientListProps> = ({ onSelectPatient }) => 
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os setores</SelectItem>
-                  {SECTORS.map((s) => (
+                  {sectors.map((s) => (
                     <SelectItem key={s} value={s}>{s}</SelectItem>
                   ))}
                 </SelectContent>

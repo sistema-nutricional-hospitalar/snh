@@ -149,6 +149,18 @@ class Prescricao(AuditoriaMixin):
             usuario=usuario_responsavel
         ))
 
+        # Notifica observadores sobre nova prescrição (RN03)
+        self._notificador.notificar_mudanca(
+            id_paciente=self._id,
+            mensagem=(
+                f"[SNH] Nova prescrição criada\n"
+                f"Paciente: {self._paciente.nome} | "
+                f"Setor: {self._paciente.setor_nome}\n"
+                f"Dieta: {type(dieta).__name__} | "
+                f"Responsável: {usuario_responsavel}"
+            )
+        )
+
     # ===================== PROPERTIES =====================
 
     @property
@@ -307,4 +319,3 @@ class Prescricao(AuditoriaMixin):
             f"dieta={type(self._dieta).__name__}, "
             f"ativa={self._ativa})"
         )
-

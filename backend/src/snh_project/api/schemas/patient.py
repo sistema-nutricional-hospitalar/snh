@@ -21,7 +21,7 @@ class PatientCreate(BaseModel):
 
     # campos extras do frontend
     data_nascimento: Optional[str] = None  # alias de data_nasc
-    quarto: Optional[str] = None
+    quarto: Optional[int] = None
     setor_id: Optional[str] = None         # id do setor (aceita em vez de setor_nome)
     sexo: Optional[str] = None
     peso_atual: Optional[float] = None
@@ -53,7 +53,7 @@ class PatientUpdate(BaseModel):
     setor_nome: Optional[str] = None
     setor_id: Optional[str] = None
     leito: Optional[Any] = None
-    quarto: Optional[str] = None
+    quarto: Optional[int] = None
     data_internacao: Optional[str] = None
     risco: Optional[bool] = None
     sexo: Optional[str] = None
@@ -73,7 +73,7 @@ class PatientResponse(BaseModel):
     setor_id: Optional[str] = None
     setor_nome: Optional[str] = None
     leito: Optional[Any] = None
-    quarto: Optional[str] = None
+    quarto: Optional[int] = None
     data_internacao: Optional[str] = None
     risco: bool = False
     criado_em: Optional[str] = None

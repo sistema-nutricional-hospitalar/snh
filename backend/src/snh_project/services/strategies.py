@@ -32,23 +32,27 @@ class NotificacaoInApp(EstrategiaNotificacao):
         from ..infrastructure.notification_repository import NotificationRepository
         self._repo = NotificationRepository(f"{data_dir}/notifications.json")
 
-    def enviar(self, mensagem: str, destinatario: str, prioridade: str = "normal") -> bool:
+    def enviar(self, mensagem: str, destinatario: str, prioridade: str = "normal", patient_id: str = None) -> bool:
         """Persiste notificação in-app para o destinatário.
 
         Args:
             mensagem: Texto da notificação.
             destinatario: E-mail ou identificador do destinatário.
             prioridade: 'normal' ou 'urgente' (RN05).
+            patient_id: UUID do paciente relacionado (opcional).
 
         Returns:
             True se persistida com sucesso, False em caso de erro.
         """
         try:
-            self._repo.salvar_notificacao(
-                destinatario=destinatario,
-                mensagem=mensagem,
-                prioridade=prioridade,
-            )
+            payload = {
+                "destinatario": destinatario,
+                "mensagem": mensagem,
+                "prioridade": prioridade,
+            }
+            if patient_id is not None:
+                payload["patient_id"] = patient_id
+            self._repo.salvar_notificacao(**payload)
             return True
         except Exception:
             return False

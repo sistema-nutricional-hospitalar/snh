@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .patient import Paciente
@@ -33,7 +33,7 @@ class SetorClinico:
             raise ValueError("Nome do setor não pode ser vazio")
         
         self._nome = nome.strip()
-        self._lista_pacientes: Dict[int, 'Paciente'] = {}  # leito → Paciente
+        self._lista_pacientes: Dict[Union[int, str], 'Paciente'] = {}  # leito → Paciente
     
     
     @property
@@ -127,8 +127,10 @@ class SetorClinico:
         if not hasattr(paciente, 'nome'):
             raise TypeError("paciente deve ser instância de Paciente")
         
-        if not isinstance(leito, int) or leito <= 0:
-            raise ValueError(f"Leito deve ser inteiro positivo, recebido: {leito}")
+        if isinstance(leito, int) and leito <= 0:
+            raise ValueError(f"Leito inteiro deve ser positivo, recebido: {leito}")
+        if not isinstance(leito, (int, str)) or (isinstance(leito, str) and not leito.strip()):
+            raise ValueError(f"Leito deve ser inteiro positivo ou string não-vazia, recebido: {leito!r}")
         
         # Verifica se leito está disponível
         if leito in self._lista_pacientes:

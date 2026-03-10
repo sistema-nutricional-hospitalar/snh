@@ -10,7 +10,7 @@ export interface LoginResponse {
 }
 
 // ─── User ────────────────────────────────────────────────────────────────────
-export type UserRole = 'admin' | 'nutricionista' | 'copeiro';
+export type UserRole = 'admin' | 'nutricionista' | 'copeiro' | 'medico' | 'enfermeiro';
 
 export interface User {
   id: string;
@@ -19,6 +19,9 @@ export interface User {
   tipo: UserRole;
   setor?: string | null;
   crn?: string | null;
+  crm?: string | null;        // ← ADICIONAR
+  coren?: string | null;      // ← ADICIONAR
+  especialidade?: string | null;  // ← ADICIONAR
   turno?: string | null;
   ativo: boolean;
 }
@@ -37,7 +40,7 @@ export interface Patient {
   nome: string;
   data_nascimento: string;
   sexo: 'M' | 'F';
-  quarto: string;
+  quarto: number | string;
   leito: string;
   setor_id: string;
   setor_nome?: string;
@@ -74,6 +77,20 @@ export interface DietaInfo {
   suplementos: string[];
   consistencia?: string | null;
   observacoes?: string | null;
+  numero_refeicoes?: number | null;
+  tipo_refeicao?: string | null;
+  // Campos específicos de dieta enteral
+  via_infusao?: string | null;
+  velocidade_ml_h?: number | null;
+  quantidade_gramas_por_porcao?: number | null;
+  porcoes_diarias?: number | null;
+  tipo_equipo?: string | null;
+  // Campos específicos de dieta parenteral
+  tipo_acesso?: string | null;
+  volume_ml_dia?: number | null;
+  composicao?: string | null;
+  // Campos específicos de dieta mista
+  componentes_raw?: any[] | null;
 }
 
 export interface HistoricoItem {
@@ -91,7 +108,12 @@ export interface Notificacao {
   mensagem: string;
   tipo: 'alteracao_dieta' | 'novo_paciente' | 'urgente' | 'sistema';
   prioridade: 'baixa' | 'media' | 'alta' | 'urgente';
+  paciente_id?: string | null;
+  paciente_nome?: string | null;
   setor_id?: string | null;
+  setor_nome?: string | null;
+  prescricao_id?: string | null;
+  destinatario?: string | null;
   lida: boolean;
   criada_em: string;
 }
@@ -102,7 +124,7 @@ export type PriorityLevel = 'baixa' | 'media' | 'alta' | 'urgente';
 // Figma mock types (kept for compatibility)
 export interface Diet {
   id: string;
-  type: 'oral' | 'enteral';
+  type: 'oral' | 'enteral' | 'parenteral' | 'mista';
   description: string;
   consistency: string;
   restrictions: string[];
