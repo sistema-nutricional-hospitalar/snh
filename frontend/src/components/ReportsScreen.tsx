@@ -13,8 +13,6 @@ import {
   Clock, RefreshCw, AlertCircle,
 } from 'lucide-react';
 
-const SECTORS = ['UTI', 'Cardiologia', 'Neurologia', 'Pediatria', 'Oncologia', 'Ortopedia', 'Cirurgia Geral', 'Emergência'];
-
 const PERIOD_OPTIONS = [
   { value: 'today', label: 'Hoje' },
   { value: 'week',  label: 'Esta Semana' },
@@ -47,11 +45,6 @@ export const ReportsScreen: React.FC = () => {
   const [error,      setError]      = useState('');
 
   // ── Local stats from patients (always available, no backend bug dependency) ─
-  const oralCount    = patients.filter(p => {
-    // we don't have diet type directly on patient, just count all
-    return true;
-  }).length;
-
   const localStats = {
     total:    patients.length,
     alergias: patients.reduce((s, p) => s + (p.alergias?.length ?? 0), 0),
@@ -146,7 +139,7 @@ export const ReportsScreen: React.FC = () => {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os Setores</SelectItem>
-                  {SECTORS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  {[...new Set(patients.map(p => p.setor_nome).filter(Boolean))].sort().map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

@@ -56,35 +56,52 @@ class PatientController:
         )
         data_internacao = dados.get("data_internacao") or date.today().isoformat()
 
-        # ── Resolve leito (int) ────────────────────────────────────────────────
+        # ── Resolve quarto (obrigatoriamente inteiro) ────────────────────────────
+        quarto_raw = dados.get("quarto")
+        if quarto_raw is not None:
+            try:
+                quarto_val: Any = int(quarto_raw)
+            except (ValueError, TypeError):
+                raise ValueError(
+                    f"Quarto deve ser um número inteiro, recebido: '{quarto_raw}'"
+                )
+        else:
+            quarto_val = None
+
+        # ── Resolve leito (A, B, C, D ou inteiro) ─────────────────────────────
         leito_raw = dados.get("leito", 1)
         try:
-            leito_int = int(leito_raw)
+            leito_val: Any = int(leito_raw)
         except (ValueError, TypeError):
-            leito_int = 1
+            leito_val = str(leito_raw).strip() if leito_raw is not None else 1
 
         paciente = Paciente(
             nome=dados["nome"].strip(),
             dataNasc=data_nasc,
             setorClinico=setor,
-            leito=leito_int,
+            leito=leito_val,
             datain=_parse_datetime(data_internacao),
             risco=bool(dados.get("risco", False)),
         )
 
-        # RN: leito único por setor — impede ocupação duplicada
+        # RN: a combinação quarto+leito deve ser única por setor
+        # Leitos iguais em quartos diferentes são permitidos
         pacientes_no_setor = self._patient_repo.listar_por_setor(setor_id)
         for p in pacientes_no_setor:
-            if p.get("leito") == leito_int:
+            mesmo_leito = str(p.get("leito", "")).strip() == str(leito_val).strip()
+            mesmo_quarto = str(p.get("quarto") or "") == str(quarto_val or "")
+            if mesmo_leito and mesmo_quarto:
                 raise ValueError(
-                    f"Leito {leito_int} já está ocupado no setor '{setor.nome}'."
+                    f"Leito {leito_val} do quarto {quarto_val} já está ocupado no setor '{setor.nome}'."
                 )
 
         patient_id = self._patient_repo.salvar_paciente(paciente, setor_id)
 
         # ── Persiste campos extras do frontend (não no domínio, mas no JSON) ──
         extras: Dict[str, Any] = {}
-        for campo in ("quarto", "sexo", "peso_atual", "altura", "diagnostico",
+        if quarto_val is not None:
+            extras["quarto"] = quarto_val
+        for campo in ("sexo", "peso_atual", "altura", "diagnostico",
                       "observacoes", "alergias", "restricoes_alimentares"):
             if campo in dados and dados[campo] is not None:
                 extras[campo] = dados[campo]

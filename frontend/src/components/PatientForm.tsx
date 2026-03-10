@@ -69,6 +69,10 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
       toast.error('Preencha nome, quarto e setor.');
       return;
     }
+    if (form.quarto.trim() && isNaN(parseInt(form.quarto.trim(), 10))) {
+      toast.error('Quarto deve ser um número inteiro.');
+      return;
+    }
 
     if (form.data_nascimento) {
       const nascimento = new Date(form.data_nascimento);
@@ -89,7 +93,7 @@ export const PatientForm: React.FC<Props> = ({ onSuccess }) => {
     try {
       const patient = await apiCreatePatient({
         nome: form.nome.trim(),
-        quarto: form.quarto.trim(),
+        quarto: parseInt(form.quarto.trim(), 10) || undefined,
         leito: form.leito,
         setor_id: form.setor_id,
         data_nascimento: form.data_nascimento || undefined,

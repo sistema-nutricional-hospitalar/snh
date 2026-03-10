@@ -194,7 +194,7 @@ const CreateUserDialog: React.FC<{ open: boolean; onClose: () => void; onCreated
         nome:  form.nome,
         email: form.email,
         senha: form.senha,
-        tipo:  form.tipo as any,
+        tipo:  form.tipo === "admin" ? "administrador" : form.tipo as any,
         setor: form.setor || undefined,
         crn:   form.crn   || undefined,
         turno: form.turno || undefined,
@@ -233,13 +233,13 @@ const CreateUserDialog: React.FC<{ open: boolean; onClose: () => void; onCreated
             <Select value={form.tipo} onValueChange={v => set('tipo', v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="admin">Administrador</SelectItem>
+                <SelectItem value="administrador">Administrador</SelectItem>
                 <SelectItem value="nutricionista">Nutricionista</SelectItem>
                 <SelectItem value="copeiro">Copeiro</SelectItem>
               </SelectContent>
             </Select>
           </Field>
-          {form.tipo === 'nutricionista' && (
+          {(form.tipo === 'nutricionista') && (
             <Field label="CRN">
               <Input value={form.crn} onChange={e => set('crn', e.target.value)} placeholder="CRN-8/12345" />
             </Field>

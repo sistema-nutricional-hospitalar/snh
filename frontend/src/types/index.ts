@@ -37,7 +37,7 @@ export interface Patient {
   nome: string;
   data_nascimento: string;
   sexo: 'M' | 'F';
-  quarto: string;
+  quarto: number | string;
   leito: string;
   setor_id: string;
   setor_nome?: string;
@@ -74,6 +74,16 @@ export interface DietaInfo {
   suplementos: string[];
   consistencia?: string | null;
   observacoes?: string | null;
+  // Campos específicos de dieta enteral
+  via_infusao?: string | null;
+  velocidade_ml_h?: number | null;
+  quantidade_gramas_por_porcao?: number | null;
+  porcoes_diarias?: number | null;
+  tipo_equipo?: string | null;
+  // Campos específicos de dieta parenteral
+  tipo_acesso?: string | null;
+  volume_ml_dia?: number | null;
+  composicao?: string | null;
 }
 
 export interface HistoricoItem {

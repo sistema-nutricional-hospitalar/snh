@@ -109,6 +109,11 @@ export const TouchDisplay: React.FC = () => {
           {filtered.slice(0, 12).map(p => (
             <PatientCard key={p.id} patient={p} onClick={() => selectPatient(p)} />
           ))}
+          {filtered.length > 12 && (
+            <div className="col-span-full text-center text-sm text-muted-foreground py-3">
+              Exibindo 12 de {filtered.length} pacientes. Refine a busca para ver outros.
+            </div>
+          )}
         </div>
       )}
     </div>

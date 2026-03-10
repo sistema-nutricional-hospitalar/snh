@@ -45,12 +45,21 @@ function mapPrescricao(raw: any): Prescricao {
     dieta_atual: {
       tipo:         dieta.tipo ?? 'oral',
       descricao:    dados.descricao ?? dados.textura ?? dieta.tipo ?? '',
-      // calorias calculadas no backend durante serialização da dieta
       calorias:     dados.calorias ?? null,
       consistencia: dados.textura ?? dados.consistencia ?? null,
       restricoes:   dados.restricoes ?? [],
       suplementos:  dados.suplementos ?? [],
       observacoes:  dados.observacoes ?? null,
+      // Campos enteral
+      via_infusao:                dados.via_infusao ?? null,
+      velocidade_ml_h:            dados.velocidade_ml_h ?? null,
+      quantidade_gramas_por_porcao: dados['quantidade_gramas_por_porção'] ?? null,
+      porcoes_diarias:            dados.porcoes_diarias ?? null,
+      tipo_equipo:                dados.tipo_equipo ?? null,
+      // Campos parenteral
+      tipo_acesso:  dados.tipo_acesso ?? null,
+      volume_ml_dia: dados.volume_ml_dia ?? null,
+      composicao:   dados.composicao ?? null,
     },
     status:      raw.ativa ? 'ativa' : 'encerrada',
     data_inicio: raw.criado_em ?? '',
@@ -170,8 +179,8 @@ export async function apiGetPrescriptionHistory(id: string) {
 }
 
 // ─── Notifications ────────────────────────────────────────────────────────────
-export async function apiGetNotifications(): Promise<Notificacao[]> {
-  const res = await client.get<Notificacao[]>('/notifications');
+export async function apiGetNotifications(apenasNaoLidas = false): Promise<Notificacao[]> {
+  const res = await client.get<Notificacao[]>('/notifications', { params: { apenas_nao_lidas: apenasNaoLidas } });
   return res.data;
 }
 

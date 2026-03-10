@@ -1,30 +1,6 @@
 [
   {
-    "id": "setor-uti-001",
-    "nome": "UTI"
-  },
-  {
-    "id": "setor-enf-002",
-    "nome": "Enfermaria Geral"
-  },
-  {
-    "id": "setor-cg-003",
-    "nome": "Clínica Geral"
-  },
-  {
-    "id": "setor-ped-004",
-    "nome": "Pediatria"
-  },
-  {
-    "id": "8c5873be-b2aa-4048-97cd-e4f9ca83cb19",
-    "nome": "Emergência"
-  },
-  {
-    "id": "325dab04-69f2-405a-a164-994198c15a1f",
-    "nome": "Cirurgia Geral"
-  },
-  {
-    "id": "37a52563-22f2-41a5-bcef-7b4743afe6ea",
+    "id": "8715a109-b613-482f-8412-391c6f125933",
     "nome": "Cardiologia"
   }
 ]

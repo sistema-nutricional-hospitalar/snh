@@ -10,6 +10,41 @@ from ...infrastructure.notification_repository import NotificationRepository
 
 router = APIRouter(prefix="/notifications", tags=["Notificações"])
 
+
+def _normalizar(r: dict) -> dict:
+    """Normaliza um registro do backend para o formato esperado pelo frontend."""
+    mensagem = r.get("mensagem", "")
+
+    # Deriva titulo da primeira linha da mensagem
+    titulo = mensagem.split("\n")[0].replace("[SNH] ", "").strip() or "Notificação"
+
+    # Deriva tipo a partir do conteúdo da mensagem
+    msg_lower = mensagem.lower()
+    if "nova prescrição" in msg_lower or "prescrição criada" in msg_lower:
+        tipo = "novo_paciente"
+    elif "alteração de dieta" in msg_lower or "alterada" in msg_lower:
+        tipo = "alteracao_dieta"
+    elif "encerramento" in msg_lower or "encerrada" in msg_lower:
+        tipo = "sistema"
+    else:
+        tipo = "sistema"
+
+    # Normaliza prioridade: "normal" → "media", "urgente" → "urgente"
+    prioridade_raw = r.get("prioridade", "normal")
+    mapa_prioridade = {"normal": "media", "baixa": "baixa", "media": "media", "alta": "alta", "urgente": "urgente"}
+    prioridade = mapa_prioridade.get(prioridade_raw, "media")
+
+    return {
+        "id":         r.get("id", ""),
+        "titulo":     titulo,
+        "mensagem":   mensagem,
+        "tipo":       tipo,
+        "prioridade": prioridade,
+        "setor_id":   r.get("setor_id") or r.get("patient_id"),
+        "lida":       r.get("lida", False),
+        "criada_em":  r.get("criado_em", r.get("criada_em", "")),
+    }
+
 DATA_DIR = os.getenv("SNH_DATA_DIR", "data")
 
 
@@ -34,8 +69,10 @@ def listar_notificacoes(
     destinatario = usuario.get("email", usuario.get("user_id", ""))
 
     if apenas_nao_lidas:
-        return repo.listar_nao_lidas(destinatario)
-    return repo.listar_por_destinatario(destinatario)
+        registros = repo.listar_nao_lidas(destinatario)
+    else:
+        registros = repo.listar_por_destinatario(destinatario)
+    return [_normalizar(r) for r in registros]
 
 
 @router.get(

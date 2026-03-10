@@ -34,6 +34,7 @@ def login(body: LoginRequest, user_ctrl: UserCtrl) -> TokenResponse:
         "user_id": usuario["id"],
         "tipo":    usuario["tipo"],
         "nome":    usuario["nome"],
+        "email":   usuario["email"],
     })
 
     return TokenResponse(

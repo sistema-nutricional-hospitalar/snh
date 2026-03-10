@@ -32,13 +32,14 @@ class NotificacaoInApp(EstrategiaNotificacao):
         from ..infrastructure.notification_repository import NotificationRepository
         self._repo = NotificationRepository(f"{data_dir}/notifications.json")
 
-    def enviar(self, mensagem: str, destinatario: str, prioridade: str = "normal") -> bool:
+    def enviar(self, mensagem: str, destinatario: str, prioridade: str = "normal", patient_id: str = None) -> bool:
         """Persiste notificação in-app para o destinatário.
 
         Args:
             mensagem: Texto da notificação.
             destinatario: E-mail ou identificador do destinatário.
             prioridade: 'normal' ou 'urgente' (RN05).
+            patient_id: UUID do paciente relacionado (opcional).
 
         Returns:
             True se persistida com sucesso, False em caso de erro.
@@ -48,6 +49,7 @@ class NotificacaoInApp(EstrategiaNotificacao):
                 destinatario=destinatario,
                 mensagem=mensagem,
                 prioridade=prioridade,
+                patient_id=patient_id,
             )
             return True
         except Exception:

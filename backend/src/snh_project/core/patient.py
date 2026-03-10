@@ -1,7 +1,7 @@
 """Modelo de domínio Paciente."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .setorclin import SetorClinico
@@ -30,7 +30,7 @@ class Paciente:
         nome: str,
         dataNasc: str,
         setorClinico: "SetorClinico",
-        leito: int,
+        leito: Union[int, str],
         datain: datetime,
         risco: bool,
     ) -> None:
@@ -100,7 +100,7 @@ class Paciente:
         return self._setorClinico.nome
 
     @property
-    def leito(self) -> int:
+    def leito(self) -> Union[int, str]:
         """Número do leito ocupado."""
         return self._leito
 

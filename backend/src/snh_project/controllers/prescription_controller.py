@@ -58,8 +58,20 @@ class PrescriptionController:
 
         if notificador is None:
             self._notificador = NotificadorService()
+            # Busca e-mails de todos os copeiros cadastrados dinamicamente
+            try:
+                from ..infrastructure.user_repository import UserRepository
+                user_repo = UserRepository(f"{data_dir}/users.json")
+                emails_copeiros = [
+                    r["email"] for r in user_repo.find_all()
+                    if r.get("tipo") == "copeiro" and r.get("email")
+                ]
+            except Exception:
+                emails_copeiros = []
+            if not emails_copeiros:
+                emails_copeiros = ["copeiro@hospital.com"]  # fallback
             self._notificador.registrar_observador(
-                "copeiros", NotificacaoInApp(), ["copeiro@hospital.com"]
+                "copeiros", NotificacaoInApp(data_dir=data_dir), emails_copeiros
             )
         else:
             self._notificador = notificador

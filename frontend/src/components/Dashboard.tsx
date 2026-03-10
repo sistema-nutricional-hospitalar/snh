@@ -40,7 +40,7 @@ interface NavItem {
 
 // ─── Role-based dashboard home cards ─────────────────────────────────────────
 const DashboardHome: React.FC<{ onNavigate: (s: Screen) => void }> = ({ onNavigate }) => {
-  const { currentUser, patients, unreadCount } = useApp();
+  const { currentUser, patients, unreadCount, refreshPatients } = useApp();
   const role = currentUser?.tipo;
 
   const stats = [
@@ -209,6 +209,7 @@ export const Dashboard: React.FC = () => {
           <PatientDetails
             patient={selectedPatient}
             onBack={() => navigate('patients')}
+            onDelete={async () => { await refreshPatients(); navigate('patients'); }}
           />
         ) : null;
       case 'add-patient':

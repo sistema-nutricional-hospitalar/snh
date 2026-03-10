@@ -34,7 +34,7 @@ const DIET_DESCRIPTIONS: Record<string, string[]> = {
 
 const CONSISTENCY_OPTIONS = ['Normal', 'Pastosa', 'Líquida', 'Branda'];
 const VIAS_INFUSAO        = ['nasogástrica', 'nasoentérica', 'gastrostomia', 'jejunostomia', 'cateter central'];
-const TIPOS_EQUIPO        = ['bomba', 'gravitacional', 'seringa'];
+const TIPOS_EQUIPO        = ['bomba', 'gravitacional'];  // 'seringa' removido: backend só aceita bomba/gravitacional
 const TIPOS_ACESSO        = ['periférico', 'central', 'cateter central', 'picc'];
 const COMPOSICOES_PADRAO  = [
   'Glicose 50% + Aminoácidos 10% + Lipídios 20%',
@@ -107,21 +107,21 @@ export const DietPrescriptionForm: React.FC<Props> = ({ patient, activePrescript
   const [saving,     setSaving]    = useState(false);
 
   // Oral
-  const [consistencia,    setConsistencia]   = useState('Normal');
+  const [consistencia,    setConsistencia]   = useState(existing?.consistencia ?? 'Normal');
   const [numRefeicoes,    setNumRefeicoes]   = useState('5');
 
-  // Enteral
-  const [viaInfusao,      setViaInfusao]     = useState('nasogástrica');
-  const [velocidade,      setVelocidade]     = useState('60');
-  const [qtdGramas,       setQtdGramas]      = useState('300');
-  const [porcoesDiarias,  setPorcoesDiarias] = useState('5');
-  const [tipoEquipo,      setTipoEquipo]     = useState('bomba');
+  // Enteral — pré-preenchido da prescrição existente quando disponível
+  const [viaInfusao,      setViaInfusao]     = useState(existing?.via_infusao ?? 'nasogástrica');
+  const [velocidade,      setVelocidade]     = useState(String(existing?.velocidade_ml_h ?? '60'));
+  const [qtdGramas,       setQtdGramas]      = useState(String(existing?.quantidade_gramas_por_porcao ?? '300'));
+  const [porcoesDiarias,  setPorcoesDiarias] = useState(String(existing?.porcoes_diarias ?? '5'));
+  const [tipoEquipo,      setTipoEquipo]     = useState(existing?.tipo_equipo ?? 'bomba');
 
-  // Parenteral
-  const [tipoAcesso,      setTipoAcesso]     = useState('central');
-  const [volumeMlDia,     setVolumeMlDia]    = useState('2000');
-  const [composicao,      setComposicao]     = useState(COMPOSICOES_PADRAO[0]);
-  const [velocidadePar,   setVelocidadePar]  = useState('83');
+  // Parenteral — pré-preenchido da prescrição existente quando disponível
+  const [tipoAcesso,      setTipoAcesso]     = useState(existing?.tipo_acesso ?? 'central');
+  const [volumeMlDia,     setVolumeMlDia]    = useState(String(existing?.volume_ml_dia ?? '2000'));
+  const [composicao,      setComposicao]     = useState(existing?.composicao ?? COMPOSICOES_PADRAO[0]);
+  const [velocidadePar,   setVelocidadePar]  = useState(String(existing?.velocidade_ml_h ?? '83'));
 
   // Mista — lista de componentes
   const [componentes, setComponentes] = useState<ComponenteMisto[]>([
@@ -152,7 +152,7 @@ export const DietPrescriptionForm: React.FC<Props> = ({ patient, activePrescript
   // ── Submit ────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!motivo.trim()) { toast.error('Informe o motivo da alteração da dieta.'); return; }
+    if (activePrescription && !motivo.trim()) { toast.error('Informe o motivo da alteração da dieta.'); return; }
 
     if (tipo === 'mista') {
       const total = componentes.reduce((s, c) => s + (parseFloat(c.percentual) || 0), 0);
@@ -218,7 +218,6 @@ export const DietPrescriptionForm: React.FC<Props> = ({ patient, activePrescript
         await apiCreatePrescription(patient.id, payload);
       }
 
-      await refreshPatients();
       toast.success('Dieta prescrita com sucesso! Notificação enviada para a equipe.');
       onSuccess();
     } catch (err: any) {
@@ -492,9 +491,10 @@ export const DietPrescriptionForm: React.FC<Props> = ({ patient, activePrescript
               )}
 
               <div className="space-y-1">
-                <Label>Motivo da Alteração *</Label>
+                <Label>{activePrescription ? 'Motivo da Alteração *' : 'Observações / Motivo'}</Label>
                 <Textarea value={motivo} onChange={(e) => setMotivo(e.target.value)}
-                  placeholder="Descreva o motivo da alteração..." rows={3} className={inputCls} required />
+                  placeholder={activePrescription ? "Descreva o motivo da alteração..." : "Observações iniciais (opcional)..."}
+                  rows={3} className={inputCls} required={!!activePrescription} />
               </div>
             </CardContent>
           </Card>

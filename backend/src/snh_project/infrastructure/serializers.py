@@ -66,6 +66,14 @@ def _parse_datetime(valor: str) -> datetime:
             "Use YYYY-MM-DD, DD/MM/YYYY ou DD.MM.YYYY."
         )
 
+def _parse_leito(valor):
+    """Converte leito para int se possível, mantém string caso contrário (ex: 'A', 'B')."""
+    try:
+        return int(valor)
+    except (ValueError, TypeError):
+        return str(valor).strip() if valor is not None else 1
+
+
 # =============================================================================
 # HASH DE SENHA
 # =============================================================================
@@ -352,7 +360,7 @@ def dict_to_paciente(d: Dict[str, Any], setor: SetorClinico) -> Paciente:
         nome=d["nome"],
         dataNasc=d["data_nasc"],
         setorClinico=setor,
-        leito=int(d["leito"]),
+        leito=_parse_leito(d["leito"]),
         datain=_parse_datetime(d["data_internacao"]),
         risco=bool(d["risco"]),
     )
