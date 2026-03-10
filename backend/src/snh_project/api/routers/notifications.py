@@ -2,6 +2,7 @@
 
 from typing import List, Optional
 import os
+import re
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -17,6 +18,34 @@ def _normalizar(r: dict) -> dict:
 
     # Deriva titulo da primeira linha da mensagem
     titulo = mensagem.split("\n")[0].replace("[SNH] ", "").strip() or "Notificação"
+    titulo = re.sub(r'Prescrição\s*#[a-f0-9\-]+\s*-\s*', '', titulo).strip()
+
+    # Extrai informações estruturadas
+    paciente_nome = None
+    setor_nome = None
+    prescricao_id = None
+    
+    match_paciente = re.search(r'Paciente:\s*([^|]+)', mensagem)
+    if match_paciente:
+        paciente_nome = match_paciente.group(1).strip()
+    
+    match_setor = re.search(r'Setor:\s*([^\n]+)', mensagem)
+    if match_setor:
+        setor_nome = match_setor.group(1).strip()
+    
+    match_prescricao = re.search(r'#([a-f0-9\-]{36})', mensagem)
+    if match_prescricao:
+        prescricao_id = match_prescricao.group(1)
+    
+    # Limpa mensagem
+    mensagem_limpa = mensagem
+    mensagem_limpa = re.sub(r'Paciente:.*\|.*Setor:.*\n', '', mensagem_limpa)
+    mensagem_limpa = re.sub(r'\[SNH\]\s*Prescrição\s*#[a-f0-9\-]+\s*-\s*', '', mensagem_limpa)
+    mensagem_limpa = re.sub(r'DietaOral', 'Oral', mensagem_limpa)
+    mensagem_limpa = re.sub(r'DietaEnteral', 'Enteral', mensagem_limpa)
+    mensagem_limpa = re.sub(r'DietaParenteral', 'Parenteral', mensagem_limpa)
+    mensagem_limpa = re.sub(r'DietaMista', 'Mista', mensagem_limpa)
+    mensagem_limpa = mensagem_limpa.strip()
 
     # Deriva tipo a partir do conteúdo da mensagem
     msg_lower = mensagem.lower()
@@ -29,20 +58,25 @@ def _normalizar(r: dict) -> dict:
     else:
         tipo = "sistema"
 
-    # Normaliza prioridade: "normal" → "media", "urgente" → "urgente"
+    # Normaliza prioridade
     prioridade_raw = r.get("prioridade", "normal")
     mapa_prioridade = {"normal": "media", "baixa": "baixa", "media": "media", "alta": "alta", "urgente": "urgente"}
     prioridade = mapa_prioridade.get(prioridade_raw, "media")
 
     return {
-        "id":         r.get("id", ""),
-        "titulo":     titulo,
-        "mensagem":   mensagem,
-        "tipo":       tipo,
-        "prioridade": prioridade,
-        "setor_id":   r.get("setor_id") or r.get("patient_id"),
-        "lida":       r.get("lida", False),
-        "criada_em":  r.get("criado_em", r.get("criada_em", "")),
+        "id":            r.get("id", ""),
+        "titulo":        titulo,
+        "mensagem":      mensagem_limpa,
+        "tipo":          tipo,
+        "prioridade":    prioridade,
+        "paciente_nome": paciente_nome,
+        "setor_nome":    setor_nome,
+        "prescricao_id": prescricao_id,
+        "setor_id":      r.get("setor_id") or r.get("patient_id"),
+        "paciente_id":   r.get("patient_id"),
+        "destinatario":  r.get("destinatario"),
+        "lida":          r.get("lida", False),
+        "criada_em":     r.get("criado_em", r.get("criada_em", "")),
     }
 
 DATA_DIR = os.getenv("SNH_DATA_DIR", "data")

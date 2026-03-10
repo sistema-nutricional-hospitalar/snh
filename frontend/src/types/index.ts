@@ -10,7 +10,7 @@ export interface LoginResponse {
 }
 
 // ─── User ────────────────────────────────────────────────────────────────────
-export type UserRole = 'admin' | 'nutricionista' | 'copeiro';
+export type UserRole = 'admin' | 'nutricionista' | 'copeiro' | 'medico' | 'enfermeiro';
 
 export interface User {
   id: string;
@@ -19,6 +19,9 @@ export interface User {
   tipo: UserRole;
   setor?: string | null;
   crn?: string | null;
+  crm?: string | null;        // ← ADICIONAR
+  coren?: string | null;      // ← ADICIONAR
+  especialidade?: string | null;  // ← ADICIONAR
   turno?: string | null;
   ativo: boolean;
 }
@@ -101,7 +104,12 @@ export interface Notificacao {
   mensagem: string;
   tipo: 'alteracao_dieta' | 'novo_paciente' | 'urgente' | 'sistema';
   prioridade: 'baixa' | 'media' | 'alta' | 'urgente';
+  paciente_id?: string | null;
+  paciente_nome?: string | null;
   setor_id?: string | null;
+  setor_nome?: string | null;
+  prescricao_id?: string | null;
+  destinatario?: string | null;
   lida: boolean;
   criada_em: string;
 }

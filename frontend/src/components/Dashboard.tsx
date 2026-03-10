@@ -9,7 +9,6 @@ import { PatientForm } from './PatientForm';
 import { TouchDisplay } from './TouchDisplay';
 import { ReportsScreen } from './ReportsScreen';
 import { AdminUsers } from './AdminUsers';
-import { ScreenPlaceholder } from './ScreenPlaceholder';
 import { Patient } from '../types';
 import {
   LayoutDashboard, Users, UserPlus, Bell, FileText,
@@ -40,7 +39,8 @@ interface NavItem {
 
 // ─── Role-based dashboard home cards ─────────────────────────────────────────
 const DashboardHome: React.FC<{ onNavigate: (s: Screen) => void }> = ({ onNavigate }) => {
-  const { currentUser, patients, unreadCount, refreshPatients } = useApp();
+  // refreshPatients extraído do contexto para uso em ações de atualização
+  const { currentUser, patients, unreadCount } = useApp();
   const role = currentUser?.tipo;
 
   const stats = [
@@ -73,7 +73,6 @@ const DashboardHome: React.FC<{ onNavigate: (s: Screen) => void }> = ({ onNaviga
         </p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
@@ -92,7 +91,6 @@ const DashboardHome: React.FC<{ onNavigate: (s: Screen) => void }> = ({ onNaviga
         })}
       </div>
 
-      {/* Quick actions by role */}
       <div className="bg-white rounded-xl border p-5">
         <h3 className="font-semibold mb-4">Ações rápidas</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -147,41 +145,43 @@ const QuickAction: React.FC<{
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export const Dashboard: React.FC = () => {
-  const { currentUser, logout, unreadCount } = useApp();
+  // Adicionado refreshPatients aqui para resolver o erro de referência
+  const { currentUser, logout, unreadCount, refreshPatients } = useApp();
   const [activeScreen, setActiveScreen] = useState<Screen>('dashboard');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const role = currentUser?.tipo ?? '';
 
+  // Adicionado o casting 'as Screen' para garantir compatibilidade de tipos
   const navItems: NavItem[] = [
     {
-      id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard,
+      id: 'dashboard' as Screen, label: 'Dashboard', icon: LayoutDashboard,
       roles: ['admin', 'nutricionista', 'copeiro'],
     },
     {
-      id: 'patients', label: 'Pacientes', icon: Users,
+      id: 'patients' as Screen, label: 'Pacientes', icon: Users,
       roles: ['admin', 'nutricionista'],
     },
     {
-      id: 'add-patient', label: 'Novo Paciente', icon: UserPlus,
+      id: 'add-patient' as Screen, label: 'Novo Paciente', icon: UserPlus,
       roles: ['nutricionista', 'admin'],
     },
     {
-      id: 'touch-display', label: 'Painel de Dietas', icon: Monitor,
+      id: 'touch-display' as Screen, label: 'Painel de Dietas', icon: Monitor,
       roles: ['copeiro', 'nutricionista'],
     },
     {
-      id: 'notifications', label: 'Notificações', icon: Bell,
+      id: 'notifications' as Screen, label: 'Notificações', icon: Bell,
       roles: ['admin', 'nutricionista', 'copeiro'],
       badge: unreadCount,
     },
     {
-      id: 'reports', label: 'Relatórios', icon: FileText,
+      id: 'reports' as Screen, label: 'Relatórios', icon: FileText,
       roles: ['admin', 'nutricionista'],
     },
     {
-      id: 'admin-users', label: 'Usuários', icon: Settings,
+      id: 'admin-users' as Screen, label: 'Usuários', icon: Settings,
       roles: ['admin'],
     },
   ].filter((item) => item.roles.includes(role));
@@ -209,7 +209,10 @@ export const Dashboard: React.FC = () => {
           <PatientDetails
             patient={selectedPatient}
             onBack={() => navigate('patients')}
-            onDelete={async () => { await refreshPatients(); navigate('patients'); }}
+            onDelete={async () => { 
+              if (refreshPatients) await refreshPatients(); 
+              navigate('patients'); 
+            }}
           />
         ) : null;
       case 'add-patient':
@@ -241,7 +244,6 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
       <aside
         className={`
           fixed inset-y-0 left-0 z-50 w-64 bg-white border-r flex flex-col
@@ -250,7 +252,6 @@ export const Dashboard: React.FC = () => {
           lg:translate-x-0 lg:static lg:inset-0
         `}
       >
-        {/* Logo */}
         <div className="flex items-center justify-between h-16 px-5 border-b">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -268,14 +269,12 @@ export const Dashboard: React.FC = () => {
           </Button>
         </div>
 
-        {/* Role badge */}
         <div className="px-5 py-3 border-b">
           <span className={`text-xs font-medium px-2 py-1 rounded-full ${roleBadgeColor[role] ?? 'bg-gray-100 text-gray-700'}`}>
             {roleLabel[role] ?? role}
           </span>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 py-4 px-3 overflow-y-auto">
           <div className="space-y-0.5">
             {navItems.map((item) => {
@@ -304,7 +303,6 @@ export const Dashboard: React.FC = () => {
           </div>
         </nav>
 
-        {/* User footer */}
         <div className="p-3 border-t">
           <div className="flex items-center gap-3 mb-2.5 px-2">
             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -329,7 +327,6 @@ export const Dashboard: React.FC = () => {
         </div>
       </aside>
 
-      {/* Overlay mobile */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-40 lg:hidden"
@@ -337,9 +334,7 @@ export const Dashboard: React.FC = () => {
         />
       )}
 
-      {/* ── Main content ─────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
         <header className="h-16 bg-white border-b flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
           <Button
             variant="ghost"
@@ -350,7 +345,6 @@ export const Dashboard: React.FC = () => {
             <Menu className="w-5 h-5" />
           </Button>
 
-          {/* Breadcrumb */}
           <div className="hidden lg:flex items-center gap-1.5 text-sm text-muted-foreground">
             <span>SNH</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -359,7 +353,6 @@ export const Dashboard: React.FC = () => {
             </span>
           </div>
 
-          {/* Right icons */}
           <div className="flex items-center gap-1 ml-auto">
             <Button
               variant="ghost"
@@ -375,7 +368,6 @@ export const Dashboard: React.FC = () => {
           </div>
         </header>
 
-        {/* Page content */}
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
           {renderContent()}
         </main>
