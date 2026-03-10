@@ -1,0 +1,6 @@
+[
+  {"id": "setor-uti-001", "nome": "UTI"},
+  {"id": "setor-enf-002", "nome": "Enfermaria Geral"},
+  {"id": "setor-cg-003", "nome": "Clínica Geral"},
+  {"id": "setor-ped-004", "nome": "Pediatria"}
+]

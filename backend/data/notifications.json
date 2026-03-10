@@ -1,0 +1,47 @@
+[
+  {
+    "id": "769ad7f6-aa51-4310-8942-2801fddd3fef",
+    "destinatario": "copeiro@hospital.com",
+    "mensagem": "[SNH] Prescrição #292deefc-aae0-4d40-82a7-463c2ac9d931 - Alteração de dieta\nPaciente: Maria Silva | Setor: Enfermaria Geral\nDieta alterada de DietaOral para DietaOral",
+    "patient_id": null,
+    "prioridade": "normal",
+    "lida": false,
+    "criado_em": "2026-03-04T13:18:46.655555"
+  },
+  {
+    "id": "9089a093-e619-4e63-9a0d-0ecb11ab403e",
+    "destinatario": "copeiro@hospital.com",
+    "mensagem": "[SNH] Prescrição #44d1c260-71a9-4e4b-a886-12ae623eda41 - Alteração de dieta\nPaciente: Teste Historico | Setor: UTI\nDieta alterada de DietaOral para DietaOral",
+    "patient_id": null,
+    "prioridade": "normal",
+    "lida": false,
+    "criado_em": "2026-03-04T13:18:54.619928"
+  },
+  {
+    "id": "111c087b-8850-4090-b2e7-b8cdfa60d8c2",
+    "destinatario": "copeiro@hospital.com",
+    "mensagem": "[SNH] Prescrição #44d1c260-71a9-4e4b-a886-12ae623eda41 - Alteração de dieta\nPaciente: Teste Historico | Setor: UTI\nDieta alterada de DietaOral para DietaOral",
+    "patient_id": null,
+    "prioridade": "normal",
+    "lida": false,
+    "criado_em": "2026-03-04T13:18:54.621524"
+  },
+  {
+    "id": "0e6bdf07-dde6-4cdd-b763-bf93041078a2",
+    "destinatario": "copeiro@hospital.com",
+    "mensagem": "[SNH] Prescrição #292deefc-aae0-4d40-82a7-463c2ac9d931 - Alteração de dieta\nPaciente: Maria Silva | Setor: Enfermaria Geral\nDieta alterada de DietaOral para DietaEnteral",
+    "patient_id": null,
+    "prioridade": "normal",
+    "lida": false,
+    "criado_em": "2026-03-08T19:53:31.532649"
+  },
+  {
+    "id": "6f345b14-b3a0-44db-a09f-0ef1cf805e42",
+    "destinatario": "copeiro@hospital.com",
+    "mensagem": "[SNH] Prescrição #292deefc-aae0-4d40-82a7-463c2ac9d931 - Alteração de dieta\nPaciente: Maria Silva | Setor: Enfermaria Geral\nDieta alterada de DietaEnteral para DietaEnteral",
+    "patient_id": null,
+    "prioridade": "normal",
+    "lida": false,
+    "criado_em": "2026-03-08T20:24:13.776934"
+  }
+]

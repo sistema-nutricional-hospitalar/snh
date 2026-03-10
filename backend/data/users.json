@@ -1,0 +1,39 @@
+[
+  {
+    "id": "user-admin-001",
+    "nome": "Administrador Sistema",
+    "cpf": "00000000000",
+    "email": "admin@hospital.com",
+    "tipo": "administrador",
+    "status": "ativo",
+    "senha_hash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+    "criado_em": "2024-01-01T00:00:00",
+    "dados_extras": {}
+  },
+  {
+    "id": "user-nutri-001",
+    "nome": "Dra. Ana Nutricionista",
+    "cpf": "11111111111",
+    "email": "nutricionista@hospital.com",
+    "tipo": "nutricionista",
+    "status": "ativo",
+    "senha_hash": "3b2d163787852a9e127b321a5c8160e8c20f066bcb1485d25e2bca3a1992d5c3",
+    "criado_em": "2024-01-01T00:00:00",
+    "dados_extras": {
+      "crn": "CRN-8/12345"
+    }
+  },
+  {
+    "id": "user-copeiro-001",
+    "nome": "João Copeiro",
+    "cpf": "22222222222",
+    "email": "copeiro@hospital.com",
+    "tipo": "copeiro",
+    "status": "ativo",
+    "senha_hash": "aea0c4b7efd11e3db68ed3f99719db6a0cbe30b19afc007207c17a954b1c379a",
+    "criado_em": "2024-01-01T00:00:00",
+    "dados_extras": {
+      "turno": "manha"
+    }
+  }
+]
