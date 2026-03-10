@@ -1,0 +1,40 @@
+[
+  {
+    "id": "05e4c366-0653-4ca2-a214-7e77d144e660",
+    "nome": "teste",
+    "data_nasc": "2001-01-01",
+    "setor_id": "8715a109-b613-482f-8412-391c6f125933",
+    "leito": "A",
+    "data_internacao": "2026-03-10T00:00:00",
+    "risco": false,
+    "criado_em": "2026-03-10T13:14:48.013462",
+    "atualizado_em": "2026-03-10T13:14:48.022915",
+    "quarto": 1,
+    "sexo": "M",
+    "peso_atual": 70.0,
+    "altura": 169.0,
+    "diagnostico": "",
+    "observacoes": "",
+    "alergias": [],
+    "restricoes_alimentares": []
+  },
+  {
+    "id": "b0209a53-c3f2-48b0-b00e-68055079940e",
+    "nome": "test2",
+    "data_nasc": "2001-01-01",
+    "setor_id": "8715a109-b613-482f-8412-391c6f125933",
+    "leito": "A",
+    "data_internacao": "2026-03-10T00:00:00",
+    "risco": false,
+    "criado_em": "2026-03-10T13:15:18.477840",
+    "atualizado_em": "2026-03-10T13:15:18.486603",
+    "quarto": 2,
+    "sexo": "M",
+    "peso_atual": 70.0,
+    "altura": 169.0,
+    "diagnostico": "",
+    "observacoes": "",
+    "alergias": [],
+    "restricoes_alimentares": []
+  }
+]
