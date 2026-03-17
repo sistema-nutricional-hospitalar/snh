@@ -13,8 +13,6 @@ import {
   Clock, RefreshCw, AlertCircle,
 } from 'lucide-react';
 
-const SECTORS = ['UTI', 'Cardiologia', 'Neurologia', 'Pediatria', 'Oncologia', 'Ortopedia', 'Cirurgia Geral', 'Emergência'];
-
 const PERIOD_OPTIONS = [
   { value: 'today', label: 'Hoje' },
   { value: 'week',  label: 'Esta Semana' },
@@ -46,14 +44,9 @@ export const ReportsScreen: React.FC = () => {
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState('');
 
-  // ── Local stats from patients (always available, no backend bug dependency) ─
-  const oralCount    = patients.filter(p => {
-    // we don't have diet type directly on patient, just count all
-    return true;
-  }).length;
-
+  // Local stats from patients
   const localStats = {
-    total:    patients.length,
+    total:     patients.length,
     alergias: patients.reduce((s, p) => s + (p.alergias?.length ?? 0), 0),
     restricoes: patients.reduce((s, p) => s + (p.restricoes_alimentares?.length ?? 0), 0),
     setores: [...new Set(patients.map(p => p.setor_nome).filter(Boolean))].length,
@@ -104,7 +97,6 @@ export const ReportsScreen: React.FC = () => {
         </Button>
       </div>
 
-      {/* Error notice (non-blocking) */}
       {error && (
         <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -146,7 +138,10 @@ export const ReportsScreen: React.FC = () => {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os Setores</SelectItem>
-                  {SECTORS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  {[...new Set(patients.map(p => p.setor_nome).filter(Boolean))].sort().map(s => (
+                    // Correção: Garante que 'value' nunca seja undefined usando ?? ""
+                    <SelectItem key={s ?? "none"} value={s ?? ""}>{s}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -198,7 +193,6 @@ export const ReportsScreen: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Fallback local breakdown */}
                   {!dietData && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <div>
@@ -290,8 +284,8 @@ export const ReportsScreen: React.FC = () => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <StatBox label="Total Pacientes"     value={localStats.total}    color="text-blue-600" />
-                    <StatBox label="Com Alergias"        value={patients.filter(p => p.alergias?.length > 0).length} color="text-red-600" />
-                    <StatBox label="Com Restrições"      value={patients.filter(p => p.restricoes_alimentares?.length > 0).length} color="text-orange-600" />
+                    <StatBox label="Com Alergias"        value={patients.filter(p => (p.alergias?.length ?? 0) > 0).length} color="text-red-600" />
+                    <StatBox label="Com Restrições"      value={patients.filter(p => (p.restricoes_alimentares?.length ?? 0) > 0).length} color="text-orange-600" />
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

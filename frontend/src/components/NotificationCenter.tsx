@@ -34,10 +34,17 @@ export const NotificationCenter: React.FC = () => {
   const { notifications, markRead, markAllRead, unreadCount } = useApp();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [marking, setMarking] = useState(false);
+  const [setorFilter, setSetorFilter] = useState<string | null>(null);
 
-  const filtered = notifications.filter((n) =>
-    filter === 'all' || !n.lida
-  );
+  const setoresUnicos = Array.from(
+    new Set((notifications || []).map(n => n.setor_nome).filter(Boolean))
+  ).sort() as string[];
+
+  const filtered = notifications.filter((n) => {
+    const matchFilter = filter === 'all' || !n.lida;
+    const matchSetor = !setorFilter || n.setor_nome === setorFilter;
+    return matchFilter && matchSetor;
+  });
 
   const handleMarkAll = async () => {
     setMarking(true);
@@ -72,6 +79,30 @@ export const NotificationCenter: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Filtro por setor */}
+      {setoresUnicos.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-medium text-muted-foreground">Filtrar por setor:</span>
+          <Button
+            size="sm"
+            variant={setorFilter === null ? 'default' : 'outline'}
+            onClick={() => setSetorFilter(null)}
+          >
+            Todos os setores
+          </Button>
+          {setoresUnicos.map(setor => (
+            <Button
+              key={setor}
+              size="sm"
+              variant={setorFilter === setor ? 'default' : 'outline'}
+              onClick={() => setSetorFilter(setor)}
+            >
+              {setor}
+            </Button>
+          ))}
+        </div>
+      )}
 
       {/* Tabs */}
       <Tabs value={filter} onValueChange={(v) => setFilter(v as 'all' | 'unread')}>
@@ -163,6 +194,21 @@ const NotifCard: React.FC<{ notif: Notificacao; onMarkRead: () => void }> = ({ n
                 )}
               </div>
             </div>
+
+            {(notif.paciente_nome || notif.setor_nome) && (
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                {notif.paciente_nome && (
+                  <Badge variant="secondary" className="text-xs font-normal">
+                    <span className="mr-1">👤</span> {notif.paciente_nome}
+                  </Badge>
+                )}
+                {notif.setor_nome && (
+                  <Badge variant="outline" className="text-xs font-normal bg-blue-50 border-blue-200">
+                    <span className="mr-1">🏥</span> {notif.setor_nome}
+                  </Badge>
+                )}
+              </div>
+            )}
 
             <p className={`text-sm mb-2.5 ${!notif.lida ? 'text-gray-800' : 'text-gray-500'}`}>
               {notif.mensagem}

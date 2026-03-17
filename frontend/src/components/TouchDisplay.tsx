@@ -1,17 +1,17 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { useApp } from '../contexts/AppContext';
 import { Patient, Prescricao } from '../types';
-import { apiGetPatientPrescriptions } from '../lib/api';
+import { apiGetPatientPrescriptions, apiGetPrescriptions } from '../lib/api';
 import {
   Search, MapPin, Clock, Utensils, AlertTriangle,
   RefreshCw, ArrowLeft, Heart,
 } from 'lucide-react';
 
-// ── Enriquece paciente com dieta ativa ────────────────────────────────────────
+// ”€”€ Enriquece paciente com dieta ativa ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 interface PatientWithDiet {
   patient: Patient;
   prescricao: Prescricao | null;
@@ -23,6 +23,8 @@ export const TouchDisplay: React.FC = () => {
   const [selected, setSelected]         = useState<PatientWithDiet | null>(null);
   const [loadingDiet, setLoadingDiet]   = useState(false);
   const [refreshing, setRefreshing]     = useState(false);
+  const [preselectId, setPreselectId]   = useState<string | null>(null);
+  const [preselectPrescriptionId, setPreselectPrescriptionId] = useState<string | null>(null);
 
   const filtered = patients.filter(p =>
     (p.nome?.toLowerCase().includes(search.toLowerCase())) ||
@@ -35,19 +37,58 @@ export const TouchDisplay: React.FC = () => {
     setRefreshing(false);
   };
 
-  const selectPatient = async (patient: Patient) => {
+  const selectPatient = useCallback(async (patient: Patient, prescriptionId?: string) => {
     setLoadingDiet(true);
     setSelected({ patient, prescricao: null });
     try {
       const prescricoes = await apiGetPatientPrescriptions(patient.id);
-      const active = prescricoes.find(p => p.status === 'ativa') ?? prescricoes[0] ?? null;
+      const byId = prescriptionId
+        ? prescricoes.find(p => p.id === prescriptionId) ?? null
+        : null;
+      const active = byId ?? prescricoes.find(p => p.status === 'ativa') ?? prescricoes[0] ?? null;
       setSelected({ patient, prescricao: active });
     } catch {
       setSelected({ patient, prescricao: null });
     } finally {
       setLoadingDiet(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    const match = hash.match(/touch-display\\?(.+)$/);
+    if (!match) return;
+    const params = new URLSearchParams(match[1]);
+    const pid = params.get('patient_id');
+    const prescId = params.get('prescription_id');
+    if (pid) setPreselectId(pid);
+    if (prescId) setPreselectPrescriptionId(prescId);
+  }, []);
+
+  useEffect(() => {
+    if (!preselectId) return;
+    const p = patients.find(x => x.id === preselectId);
+    if (p) {
+      selectPatient(p, preselectPrescriptionId ?? undefined);
+      setPreselectId(null);
+      setPreselectPrescriptionId(null);
+    }
+  }, [preselectId, preselectPrescriptionId, patients, selectPatient]);
+
+  useEffect(() => {
+    if (preselectId || !preselectPrescriptionId) return;
+    // Fallback: resolve prescription_id to patient_id via /prescriptions
+    (async () => {
+      try {
+        const all = await apiGetPrescriptions();
+        const match = all.find((r: any) => r.id === preselectPrescriptionId);
+        const pid = match?.patient_id ?? match?.paciente_id ?? null;
+        if (pid) setPreselectId(pid);
+      } catch {
+        // ignore
+      }
+    })();
+  }, [preselectId, preselectPrescriptionId]);
 
   if (selected) {
     return (
@@ -109,13 +150,18 @@ export const TouchDisplay: React.FC = () => {
           {filtered.slice(0, 12).map(p => (
             <PatientCard key={p.id} patient={p} onClick={() => selectPatient(p)} />
           ))}
+          {filtered.length > 12 && (
+            <div className="col-span-full text-center text-sm text-muted-foreground py-3">
+              Exibindo 12 de {filtered.length} pacientes. Refine a busca para ver outros.
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 };
 
-// ── Patient card (list view) ──────────────────────────────────────────────────
+// ”€”€ Patient card (list view) ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 const PatientCard: React.FC<{ patient: Patient; onClick: () => void }> = ({ patient, onClick }) => (
   <Card
     className="cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200 border-2 hover:border-blue-300"
@@ -151,12 +197,13 @@ const PatientCard: React.FC<{ patient: Patient; onClick: () => void }> = ({ pati
   </Card>
 );
 
-// ── Detail view ───────────────────────────────────────────────────────────────
+// ”€”€ Detail view ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 const DetailView: React.FC<{
   data: PatientWithDiet; loading: boolean; onBack: () => void;
 }> = ({ data, loading, onBack }) => {
   const { patient, prescricao } = data;
   const diet = prescricao?.dieta_atual;
+  const componentes = Array.isArray(diet?.componentes_raw) ? diet?.componentes_raw : [];
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -207,6 +254,115 @@ const DetailView: React.FC<{
                       </div>
                     </div>
 
+                    {(diet.numero_refeicoes || diet.tipo_refeicao) && (
+                      <div className="grid grid-cols-2 gap-3 text-center">
+                        <div className="bg-white rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground">Refeições/dia</p>
+                          <p className="font-semibold">{diet.numero_refeicoes ?? '—'}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground">Tipo de Refeição</p>
+                          <p className="font-semibold">{diet.tipo_refeicao ?? '—'}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {diet.tipo === 'enteral' && (
+                      <div className="grid grid-cols-2 gap-3 text-center">
+                        <div className="bg-white rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground">Via de Infusão</p>
+                          <p className="font-semibold">{diet.via_infusao ?? '—'}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground">Velocidade</p>
+                          <p className="font-semibold">{diet.velocidade_ml_h ?? '—'} ml/h</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground">Qtd. por Porcao</p>
+                          <p className="font-semibold">{diet.quantidade_gramas_por_porcao ?? '—'} g</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground">Porções/dia</p>
+                          <p className="font-semibold">{diet.porcoes_diarias ?? '—'}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground">Tipo de Equipo</p>
+                          <p className="font-semibold">{diet.tipo_equipo ?? '—'}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {diet.tipo === 'parenteral' && (
+                      <div className="grid grid-cols-2 gap-3 text-center">
+                        <div className="bg-white rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground">Tipo de Acesso</p>
+                          <p className="font-semibold">{diet.tipo_acesso ?? '—'}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground">Volume/dia</p>
+                          <p className="font-semibold">{diet.volume_ml_dia ?? '—'} ml</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3 col-span-2">
+                          <p className="text-xs text-muted-foreground">Composição</p>
+                          <p className="font-semibold">{diet.composicao ?? '—'}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground">Velocidade</p>
+                          <p className="font-semibold">{diet.velocidade_ml_h ?? '—'} ml/h</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {diet.tipo === 'mista' && componentes.length > 0 && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1.5">Componentes da Mista</p>
+                        <div className="space-y-2">
+                          {componentes.map((c: any, i: number) => {
+                            const qtdPorcao = c?.dieta?.dados?.quantidade_gramas_por_porcao
+                              ?? c?.dieta?.dados?.['quantidade_gramas_por_por\u00e7\u00e3o'];
+                            return (
+                            <div key={i} className="bg-white rounded-lg p-3 text-sm">
+                              <div className="flex items-center justify-between">
+                                <span className="font-semibold">{c?.dieta?.tipo ?? 'Componente'}</span>
+                                <span className="text-muted-foreground">{c?.percentual ?? '—'}%</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {c?.dieta?.dados?.descricao ?? '—'}
+                              </div>
+                              {c?.dieta?.dados?.textura && (
+                                <div className="text-xs mt-1">Textura: {c.dieta.dados.textura}</div>
+                              )}
+                              {c?.dieta?.dados?.via_infusao && (
+                                <div className="text-xs mt-1">Via: {c.dieta.dados.via_infusao}</div>
+                              )}
+                              {c?.dieta?.dados?.velocidade_ml_h != null && (
+                                <div className="text-xs mt-1">Velocidade: {c.dieta.dados.velocidade_ml_h} ml/h</div>
+                              )}
+                              {qtdPorcao != null && (
+                                <div className="text-xs mt-1">Qtd. por porcao: {qtdPorcao} g</div>
+                              )}
+                              {c?.dieta?.dados?.porcoes_diarias != null && (
+                                <div className="text-xs mt-1">Porções/dia: {c.dieta.dados.porcoes_diarias}</div>
+                              )}
+                              {c?.dieta?.dados?.tipo_equipo && (
+                                <div className="text-xs mt-1">Equipo: {c.dieta.dados.tipo_equipo}</div>
+                              )}
+                              {c?.dieta?.dados?.tipo_acesso && (
+                                <div className="text-xs mt-1">Acesso: {c.dieta.dados.tipo_acesso}</div>
+                              )}
+                              {c?.dieta?.dados?.volume_ml_dia != null && (
+                                <div className="text-xs mt-1">Volume/dia: {c.dieta.dados.volume_ml_dia} ml</div>
+                              )}
+                              {c?.dieta?.dados?.composicao && (
+                                <div className="text-xs mt-1">Composição: {c.dieta.dados.composicao}</div>
+                              )}
+                            </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {diet.restricoes?.length > 0 && (
                       <div>
                         <p className="text-sm text-muted-foreground mb-1.5">Restrições da dieta</p>
@@ -256,7 +412,7 @@ const DetailView: React.FC<{
                     <div className="space-y-2">
                       {patient.alergias.map((a, i) => (
                         <div key={i} className="bg-red-50 border-2 border-red-300 rounded-xl p-4 text-center">
-                          <p className="text-red-800 font-bold text-xl">⚠️ {a}</p>
+                          <p className="text-red-800 font-bold text-xl">š ï¸ {a}</p>
                         </div>
                       ))}
                     </div>
@@ -303,3 +459,5 @@ const DetailView: React.FC<{
     </div>
   );
 };
+
+
